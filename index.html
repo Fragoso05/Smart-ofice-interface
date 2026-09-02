@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Smart Office</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Tela de proteção: só imagem de fundo, toque em qualquer lugar entra no painel -->
+  <section id="screensaver" class="screen screensaver">
+    <img class="screensaver__logo" src="assets/logo.png" alt="NosZona - Smart City Cabo Verde">
+    <div class="screensaver__clock">
+      <div id="ss-clock" class="screensaver__time">--:--</div>
+      <div id="ss-date" class="screensaver__date">-- de -- de ----</div>
+    </div>
+  </section>
+
+  <!-- Painel de controle: só os cards -->
+  <section id="panel" class="screen panel hidden">
+    <main id="tile-grid" class="tile-grid">
+      <!-- Tiles renderizados via JS -->
+    </main>
+  </section>
+
+  <!-- Modal genérico de detalhes (Relógio, Luz, A.C., Clima, Tomada) — fullscreen -->
+  <div id="detail-modal" class="modal hidden">
+    <header class="modal-header">
+      <button id="detail-back" class="icon-btn" aria-label="Voltar">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </header>
+    <div id="detail-body" class="modal-body"></div>
+  </div>
+
+  <!-- Modal do Timer — fullscreen -->
+  <div id="timer-modal" class="modal hidden">
+    <header class="modal-header">
+      <button id="timer-back" class="icon-btn" aria-label="Voltar">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div id="timer-list" class="timer-list"></div>
+
+      <div class="timer-form">
+        <div class="timer-form__label">Dispositivo</div>
+        <div id="timer-device-buttons" class="chip-grid"></div>
+
+        <div class="timer-form__label">Ação</div>
+        <div id="timer-action-buttons" class="chip-grid chip-grid--2">
+          <div class="mode-chip is-active" data-action="on">Ligar</div>
+          <div class="mode-chip" data-action="off">Desligar</div>
+        </div>
+
+        <div class="timer-form__label">Horário</div>
+        <select id="timer-time" class="timer-form__field">
+          <!-- Opções de horário populadas via JS -->
+        </select>
+
+        <button id="timer-add" class="timer-form__add">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/dataProvider.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

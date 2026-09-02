@@ -1,0 +1,533 @@
+:root {
+  --bg: #0e1015;
+  --surface: #171a21;
+  --surface-hover: #1f232c;
+  --border: #262b36;
+  --text: #e8eaed;
+  --text-dim: #8b8f9a;
+  --accent: #4f9dff;
+  --on: #34d399;
+  --off: #5a5f6b;
+  --warn: #f5a623;
+  --radius: 16px;
+
+  /* Cores de identidade de cada card — tons que combinam com o azul escuro de fundo */
+  --c-clock: #7dd3fc;   /* azul claro, neutro */
+  --c-light: #fbbf24;   /* âmbar quente, luz */
+  --c-ac: #38bdf8;      /* azul gelo, ar frio */
+  --c-weather: #a5b4fc; /* índigo suave, céu */
+  --c-outlet: #2dd4bf;  /* teal, energia */
+  --c-timer: #c084fc;   /* violeta, agendamento */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* sem scroll em kiosk */
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, -apple-system, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  width: 100vw;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- Tela de proteção ---------- */
+.screensaver {
+  /* Placeholder de imagem de fundo — troque por uma foto real da sala/empresa
+     (ex: background-image: url("../assets/screensaver.jpg"); background-size: cover;) */
+  background: linear-gradient(160deg, #0b0d12 0%, #1a1f2b 55%, #14171f 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 48px;
+  cursor: pointer;
+  position: relative;
+}
+
+.screensaver__logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(48vw, 420px);
+  height: auto;
+  pointer-events: none;
+}
+
+.screensaver__time {
+  font-size: 4.5rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.screensaver__date {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  text-transform: capitalize;
+}
+
+/* ---------- Painel: só os cards ---------- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-btn:active {
+  background: var(--surface-hover);
+}
+
+/* ---------- Grid de tiles (2 linhas x 3 colunas) ---------- */
+.tile-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* Cor de identidade de cada card, aplicada via atributo data-modal */
+.tile[data-modal="clock"] { --card-color: var(--c-clock); }
+.tile[data-modal="lights"] { --card-color: var(--c-light); }
+.tile[data-modal="ac"] { --card-color: var(--c-ac); }
+.tile[data-modal="weather"] { --card-color: var(--c-weather); }
+.tile[data-modal="outlets"] { --card-color: var(--c-outlet); }
+.tile[data-modal="timer"] { --card-color: var(--c-timer); }
+
+.tile {
+  background:
+    radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--card-color) 14%, transparent), transparent 60%),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+
+.tile:active {
+  background: var(--surface-hover);
+}
+
+.tile__icon {
+  width: 40px;
+  height: 40px;
+  color: var(--card-color);
+  opacity: 0.55;
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.tile.is-on .tile__icon {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--card-color) 70%, transparent));
+}
+
+.tile__label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tile__value {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.tile.is-on .tile__value {
+  color: var(--on);
+}
+
+/* Tile informativo (relógio/clima) — sem estado on/off, não reage a toque */
+.tile--info {
+  cursor: default;
+}
+
+.tile--info:active {
+  background: var(--surface);
+}
+
+.tile--info .tile__icon {
+  opacity: 0.9;
+}
+
+.tile__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--off);
+}
+
+.tile.is-on .tile__badge {
+  background: var(--on);
+  box-shadow: 0 0 8px var(--on);
+}
+
+/* ---------- Modais fullscreen ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 24px;
+  overflow-y: auto;
+}
+
+/* Lista de sub-dispositivos (luzes, tomadas) */
+.sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subtoggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  min-height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.subtoggle:active {
+  background: var(--surface-hover);
+}
+
+.subtoggle__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.05rem;
+}
+
+.subtoggle__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--off);
+  flex-shrink: 0;
+}
+
+.subtoggle.is-on .subtoggle__dot {
+  background: var(--on);
+  box-shadow: 0 0 8px var(--on);
+}
+
+.subtoggle__state {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--off);
+}
+
+.subtoggle.is-on .subtoggle__state {
+  color: var(--on);
+}
+
+/* Controle do A.C.: liga/desliga + stepper de temperatura + modo */
+.ac-power {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  min-height: 60px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.ac-power .subtoggle__state { font-weight: 700; }
+
+.ac-power.is-on .subtoggle__dot {
+  background: var(--on);
+  box-shadow: 0 0 8px var(--on);
+}
+
+.ac-power.is-on .subtoggle__state {
+  color: var(--on);
+}
+
+.ac-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 16px 0;
+}
+
+.ac-stepper__btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ac-stepper__btn:active {
+  background: var(--surface-hover);
+}
+
+.ac-stepper__value {
+  font-size: 2.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 130px;
+  text-align: center;
+}
+
+.mode-chips {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-chip {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mode-chip.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(79, 157, 255, 0.1);
+}
+
+/* Modal de Clima */
+.weather-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.weather-summary__temp {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.weather-summary__condition {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+}
+
+.weather-stats {
+  display: flex;
+  gap: 24px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.weather-stats strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.forecast-list {
+  display: flex;
+  gap: 10px;
+}
+
+.forecast-item {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.forecast-item__hour {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.forecast-item__temp {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Modal de Relógio */
+.clock-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.clock-modal__time {
+  font-size: 5rem;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-modal__date {
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  text-transform: capitalize;
+}
+
+/* ---------- Modal do Timer ---------- */
+.timer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timer-list__empty {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.timer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 1rem;
+}
+
+.timer-item__remove {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.timer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timer-form__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+.timer-form__label:first-child {
+  margin-top: 0;
+}
+
+.chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.chip-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.chip-grid .mode-chip {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-form__field {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 12px 14px;
+  font-size: 1rem;
+  min-height: 56px;
+}
+
+.timer-form__add {
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #061018;
+  font-weight: 600;
+  font-size: 1.05rem;
+  min-height: 56px;
+  cursor: pointer;
+  margin-top: 8px;
+}
