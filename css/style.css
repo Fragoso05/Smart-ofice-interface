@@ -429,13 +429,13 @@ html, body {
 }
 
 .clock-modal__time {
-  font-size: 5rem;
+  font-size: 7.5rem;
   font-weight: 300;
   font-variant-numeric: tabular-nums;
 }
 
 .clock-modal__date {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: var(--text-dim);
   text-transform: capitalize;
 }
