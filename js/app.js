@@ -40,6 +40,9 @@ function updateClocks() {
 
 /* ---------- Navegação entre telas ---------- */
 
+// Lembra qual era a tela ativa para restaurá-la ao acordar a tela de proteção
+let lastScreen = { type: "panel" };
+
 function showScreensaver() {
   document.getElementById("screensaver").classList.remove("hidden");
   document.getElementById("panel").classList.add("hidden");
@@ -51,15 +54,33 @@ function showScreensaver() {
 function showPanel() {
   document.getElementById("screensaver").classList.add("hidden");
   document.getElementById("panel").classList.remove("hidden");
+  lastScreen = { type: "panel" };
   resetIdleTimer();
+}
+
+// Toque na tela de proteção: volta para a mesma tela que estava aberta antes de bloquear
+function wakeFromScreensaver() {
+  document.getElementById("screensaver").classList.add("hidden");
+  document.getElementById("panel").classList.remove("hidden");
+
+  if (lastScreen.type === "detail") {
+    openDetailModal(lastScreen.detailType);
+  } else if (lastScreen.type === "timer") {
+    openTimerModal();
+  } else {
+    lastScreen = { type: "panel" };
+    resetIdleTimer();
+  }
 }
 
 /* ---------- Auto-retorno por inatividade ---------- */
 
 let idleTimer = null;
+let idlePaused = false; // true enquanto a página do Relógio estiver aberta
 
 function resetIdleTimer() {
   clearTimeout(idleTimer);
+  if (idlePaused) return;
   idleTimer = setTimeout(showScreensaver, IDLE_TIMEOUT_MS);
 }
 
@@ -154,12 +175,25 @@ let currentDetailType = null;
 
 async function openDetailModal(type) {
   currentDetailType = type;
+  lastScreen = { type: "detail", detailType: type };
+
+  // A página do Relógio não deve deixar a proteção de tela entrar em contagem
+  idlePaused = type === "clock";
+  if (idlePaused) {
+    stopIdleTimer();
+  } else {
+    resetIdleTimer();
+  }
+
   document.getElementById("detail-modal").classList.remove("hidden");
   await renderDetailBody(type);
 }
 
 function closeDetailModal() {
   document.getElementById("detail-modal").classList.add("hidden");
+  idlePaused = false;
+  lastScreen = { type: "panel" };
+  resetIdleTimer();
 }
 
 async function renderDetailBody(type) {
@@ -325,6 +359,10 @@ function buildTimeOptions(selected) {
 }
 
 async function openTimerModal() {
+  lastScreen = { type: "timer" };
+  idlePaused = false;
+  resetIdleTimer();
+
   const state = await DataProvider.getState();
   const devices = deviceOptions(state);
 
@@ -350,6 +388,8 @@ async function openTimerModal() {
 
 function closeTimerModal() {
   document.getElementById("timer-modal").classList.add("hidden");
+  lastScreen = { type: "panel" };
+  resetIdleTimer();
 }
 
 function handleTimerDeviceClick(event) {
@@ -394,10 +434,35 @@ async function renderTimerList() {
 async function handleTimerAdd() {
   if (!timerSelectedDevice) return;
   const time = document.getElementById("timer-time").value || "00:00";
+  const device = timerSelectedDevice;
+  const action = timerSelectedAction;
 
-  await DataProvider.addTimer({ device: timerSelectedDevice, action: timerSelectedAction, time });
+  await DataProvider.addTimer({ device, action, time });
   await renderTimerList();
   await renderTiles();
+
+  const state = await DataProvider.getState();
+  const deviceLabel = DEVICE_LABEL_MAP(state)[device] || device;
+  showTimerConfirm(deviceLabel, action, time);
+}
+
+/* ---------- Popup de confirmação do Timer ---------- */
+
+let timerConfirmAutoHide = null;
+
+function showTimerConfirm(deviceLabel, action, time) {
+  document.getElementById("timer-confirm-device").textContent = deviceLabel;
+  document.getElementById("timer-confirm-action").textContent = action === "on" ? "Ligar" : "Desligar";
+  document.getElementById("timer-confirm-time").textContent = time;
+
+  document.getElementById("timer-confirm").classList.remove("hidden");
+  clearTimeout(timerConfirmAutoHide);
+  timerConfirmAutoHide = setTimeout(hideTimerConfirm, 3000);
+}
+
+function hideTimerConfirm() {
+  document.getElementById("timer-confirm").classList.add("hidden");
+  clearTimeout(timerConfirmAutoHide);
 }
 
 async function handleTimerListClick(event) {
@@ -415,7 +480,7 @@ function scrollTimerBody(direction) {
 
 /* ---------- Wiring ---------- */
 
-document.getElementById("screensaver").addEventListener("click", showPanel);
+document.getElementById("screensaver").addEventListener("click", wakeFromScreensaver);
 document.getElementById("tile-grid").addEventListener("click", handleTileClick);
 
 document.getElementById("detail-back").addEventListener("click", closeDetailModal);
@@ -428,6 +493,11 @@ document.getElementById("timer-add").addEventListener("click", handleTimerAdd);
 document.getElementById("timer-list").addEventListener("click", handleTimerListClick);
 document.getElementById("timer-scroll-up").addEventListener("click", () => scrollTimerBody(-1));
 document.getElementById("timer-scroll-down").addEventListener("click", () => scrollTimerBody(1));
+
+document.getElementById("timer-confirm-ok").addEventListener("click", hideTimerConfirm);
+document.getElementById("timer-confirm").addEventListener("click", (event) => {
+  if (event.target.id === "timer-confirm") hideTimerConfirm();
+});
 
 // Qualquer toque/clique no painel ou nos modais reinicia o contador de inatividade
 ["click", "touchstart"].forEach((evt) => {

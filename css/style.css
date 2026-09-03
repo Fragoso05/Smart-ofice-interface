@@ -579,3 +579,68 @@ html, body {
   cursor: pointer;
   margin-top: 8px;
 }
+
+/* Popup de confirmação ao criar um timer */
+.popup {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup__card {
+  width: min(420px, 85vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.popup__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--on);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.popup__detail {
+  font-size: 1.15rem;
+  color: var(--text-dim);
+}
+
+.popup__detail strong,
+.popup__detail span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.popup__ok {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 8px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #061018;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+}

@@ -66,6 +66,22 @@
     <button id="timer-scroll-down" class="icon-btn scroll-btn scroll-btn--bottom" aria-label="Rolar para baixo">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
     </button>
+
+    <!-- Popup de confirmação ao criar um timer -->
+    <div id="timer-confirm" class="popup hidden">
+      <div class="popup__card">
+        <div class="popup__icon">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="popup__title">Timer criado</div>
+        <div class="popup__detail">
+          <span id="timer-confirm-device"></span> —
+          <span id="timer-confirm-action"></span> às
+          <span id="timer-confirm-time"></span>
+        </div>
+        <button id="timer-confirm-ok" class="popup__ok">OK</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/dataProvider.js"></script>
