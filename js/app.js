@@ -236,24 +236,26 @@ async function renderDetailBody(type) {
 
   if (type === "weather") {
     body.innerHTML = `
-      <div class="weather-summary">
-        <span class="weather-summary__temp">${state.weather.temp}°C</span>
-        <span class="weather-summary__condition">${state.weather.condition}</span>
-      </div>
-      <div class="weather-stats">
-        <span>Sensação: <strong>${state.weather.feelsLike}°C</strong></span>
-        <span>Umidade: <strong>${state.weather.humidity}%</strong></span>
-      </div>
-      <div class="forecast-list">
-        ${state.weather.forecast
-          .map(
-            (f) => `
-          <div class="forecast-item">
-            <div class="forecast-item__hour">${f.hour}</div>
-            <div class="forecast-item__temp">${f.temp}°C</div>
-          </div>`
-          )
-          .join("")}
+      <div class="weather-page">
+        <div class="weather-summary">
+          <span class="weather-summary__temp">${state.weather.temp}°C</span>
+          <span class="weather-summary__condition">${state.weather.condition}</span>
+        </div>
+        <div class="weather-stats">
+          <span>Sensação: <strong>${state.weather.feelsLike}°C</strong></span>
+          <span>Umidade: <strong>${state.weather.humidity}%</strong></span>
+        </div>
+        <div class="forecast-list">
+          ${state.weather.forecast
+            .map(
+              (f) => `
+            <div class="forecast-item">
+              <div class="forecast-item__hour">${f.hour}</div>
+              <div class="forecast-item__temp">${f.temp}°C</div>
+            </div>`
+            )
+            .join("")}
+        </div>
       </div>
     `;
     return;
@@ -407,6 +409,10 @@ async function handleTimerListClick(event) {
   await renderTiles();
 }
 
+function scrollTimerBody(direction) {
+  document.getElementById("timer-body").scrollBy({ top: direction * 180, behavior: "smooth" });
+}
+
 /* ---------- Wiring ---------- */
 
 document.getElementById("screensaver").addEventListener("click", showPanel);
@@ -420,6 +426,8 @@ document.getElementById("timer-device-buttons").addEventListener("click", handle
 document.getElementById("timer-action-buttons").addEventListener("click", handleTimerActionClick);
 document.getElementById("timer-add").addEventListener("click", handleTimerAdd);
 document.getElementById("timer-list").addEventListener("click", handleTimerListClick);
+document.getElementById("timer-scroll-up").addEventListener("click", () => scrollTimerBody(-1));
+document.getElementById("timer-scroll-down").addEventListener("click", () => scrollTimerBody(1));
 
 // Qualquer toque/clique no painel ou nos modais reinicia o contador de inatividade
 ["click", "touchstart"].forEach((evt) => {

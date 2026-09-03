@@ -24,25 +24,21 @@
     </main>
   </section>
 
-  <!-- Modal genérico de detalhes (Relógio, Luz, A.C., Clima, Tomada) — fullscreen -->
+  <!-- Modal genérico de detalhes (Relógio, Luz, A.C., Clima, Tomada) — fullscreen, sem header -->
   <div id="detail-modal" class="modal hidden">
-    <header class="modal-header">
-      <button id="detail-back" class="icon-btn" aria-label="Voltar">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-    </header>
+    <button id="detail-back" class="icon-btn modal-back" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <div id="detail-body" class="modal-body"></div>
   </div>
 
-  <!-- Modal do Timer — fullscreen -->
+  <!-- Modal do Timer — fullscreen, sem header, com botões de scroll -->
   <div id="timer-modal" class="modal hidden">
-    <header class="modal-header">
-      <button id="timer-back" class="icon-btn" aria-label="Voltar">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-    </header>
+    <button id="timer-back" class="icon-btn modal-back" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
 
-    <div class="modal-body">
+    <div id="timer-body" class="modal-body">
       <div id="timer-list" class="timer-list"></div>
 
       <div class="timer-form">
@@ -62,6 +58,15 @@
 
         <button id="timer-add" class="timer-form__add">Adicionar</button>
       </div>
+    </div>
+
+    <div class="scroll-controls">
+      <button id="timer-scroll-up" class="icon-btn scroll-btn" aria-label="Rolar para cima">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+      </button>
+      <button id="timer-scroll-down" class="icon-btn scroll-btn" aria-label="Rolar para baixo">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
     </div>
   </div>
 

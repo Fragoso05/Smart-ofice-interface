@@ -20,6 +20,8 @@
   --c-timer: #c084fc;   /* violeta, agendamento */
 }
 
+/* Layout dimensionado tendo como referência o display de 5" do Raspberry Pi (800x480) */
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -93,8 +95,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -201,7 +203,7 @@ html, body {
   box-shadow: 0 0 8px var(--on);
 }
 
-/* ---------- Modais fullscreen ---------- */
+/* ---------- Modais fullscreen (sem header — só a seta flutuante) ---------- */
 .modal {
   position: fixed;
   inset: 0;
@@ -209,13 +211,13 @@ html, body {
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  padding: 24px;
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+.modal-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 5;
 }
 
 .modal-body {
@@ -223,8 +225,29 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-top: 24px;
+  padding: 88px 24px 24px;
   overflow-y: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Botões de rolar (Timer): alternativa ao arrastar, útil em telas kiosk pequenas */
+.scroll-controls {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scroll-btn {
+  width: 56px;
+  height: 56px;
+  background: var(--surface-hover);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 /* Lista de sub-dispositivos (luzes, tomadas) */
@@ -241,8 +264,8 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px 18px;
-  min-height: 60px;
+  padding: 20px 24px;
+  min-height: 84px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -255,7 +278,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
 }
 
 .subtoggle__dot {
@@ -272,7 +295,7 @@ html, body {
 }
 
 .subtoggle__state {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--off);
 }
@@ -289,10 +312,10 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px 18px;
-  min-height: 60px;
+  padding: 20px 24px;
+  min-height: 84px;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
@@ -311,18 +334,18 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
-  padding: 16px 0;
+  gap: 36px;
+  padding: 20px 0;
 }
 
 .ac-stepper__btn {
-  width: 64px;
-  height: 64px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -332,10 +355,10 @@ html, body {
 }
 
 .ac-stepper__value {
-  font-size: 2.8rem;
+  font-size: 3.4rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  min-width: 130px;
+  min-width: 150px;
   text-align: center;
 }
 
@@ -346,13 +369,17 @@ html, body {
 
 .mode-chip {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
   text-align: center;
   padding: 12px 8px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-dim);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -364,27 +391,38 @@ html, body {
   background: rgba(79, 157, 255, 0.1);
 }
 
-/* Modal de Clima */
+/* Modal de Clima — valor centralizado na tela, informações logo abaixo */
+.weather-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
 .weather-summary {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 12px;
 }
 
 .weather-summary__temp {
-  font-size: 3rem;
+  font-size: 4.5rem;
   font-weight: 700;
 }
 
 .weather-summary__condition {
   color: var(--text-dim);
-  font-size: 1.1rem;
+  font-size: 1.3rem;
 }
 
 .weather-stats {
   display: flex;
-  gap: 24px;
-  font-size: 0.95rem;
+  justify-content: center;
+  gap: 32px;
+  font-size: 1.05rem;
   color: var(--text-dim);
 }
 
@@ -395,7 +433,8 @@ html, body {
 
 .forecast-list {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  width: min(90%, 480px);
 }
 
 .forecast-item {
@@ -403,7 +442,7 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px;
+  padding: 16px;
   text-align: center;
 }
 
@@ -424,18 +463,19 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 20px;
   flex: 1;
 }
 
 .clock-modal__time {
-  font-size: 7.5rem;
+  font-size: 11rem;
   font-weight: 300;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .clock-modal__date {
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   color: var(--text-dim);
   text-transform: capitalize;
 }
@@ -461,17 +501,18 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px 16px;
-  font-size: 1rem;
+  padding: 18px 20px;
+  min-height: 64px;
+  font-size: 1.05rem;
 }
 
 .timer-item__remove {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 8px 10px;
 }
 
 .timer-form {
@@ -504,7 +545,7 @@ html, body {
 }
 
 .chip-grid .mode-chip {
-  min-height: 56px;
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -516,8 +557,8 @@ html, body {
   border-radius: 10px;
   color: var(--text);
   padding: 12px 14px;
-  font-size: 1rem;
-  min-height: 56px;
+  font-size: 1.1rem;
+  min-height: 72px;
 }
 
 .timer-form__add {
@@ -526,8 +567,8 @@ html, body {
   border-radius: 10px;
   color: #061018;
   font-weight: 600;
-  font-size: 1.05rem;
-  min-height: 56px;
+  font-size: 1.15rem;
+  min-height: 76px;
   cursor: pointer;
   margin-top: 8px;
 }
