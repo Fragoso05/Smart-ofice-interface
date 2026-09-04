@@ -38,7 +38,81 @@ function updateClocks() {
   if (modalDate) modalDate.textContent = date;
 }
 
+function notifIconFor(deviceId) {
+  if (deviceId === "ac") return ICONS.ac;
+  if (deviceId.startsWith("outlet")) return ICONS.outlet;
+  return ICONS.light;
+}
+
+// Mostra o timer mais recente como pilha na tela de proteção; toque expande a lista completa
+async function renderScreensaverNotifications() {
+  const state = await DataProvider.getState();
+  const wrap = document.getElementById("ss-notifications");
+
+  if (state.timers.length === 0) {
+    wrap.classList.add("hidden");
+    return;
+  }
+
+  const labels = DEVICE_LABEL_MAP(state);
+  const ordered = [...state.timers].reverse(); // mais recente primeiro
+  const latest = ordered[0];
+  const deviceLabel = labels[latest.device] || latest.device;
+  const actionLabel = latest.action === "on" ? "Ligar" : "Desligar";
+
+  document.getElementById("ss-notif-icon").innerHTML = notifIconFor(latest.device);
+  document.getElementById("ss-notif-detail").textContent = `${deviceLabel} — ${actionLabel} às ${latest.time}`;
+
+  // Pilha: cada timer extra revela mais um "fantasma" atrás do principal
+  const remaining = ordered.length - 1;
+  document.getElementById("ss-notif-ghost-1").classList.toggle("hidden", remaining < 1);
+  document.getElementById("ss-notif-ghost-2").classList.toggle("hidden", remaining < 2);
+
+  const countEl = document.getElementById("ss-notif-count");
+  if (remaining > 0) {
+    countEl.textContent = `+${remaining}`;
+    countEl.classList.remove("hidden");
+  } else {
+    countEl.classList.add("hidden");
+  }
+
+  // Lista completa, revelada ao expandir
+  document.getElementById("ss-notif-list").innerHTML = ordered
+    .map((t) => {
+      const label = labels[t.device] || t.device;
+      const action = t.action === "on" ? "Ligar" : "Desligar";
+      return `
+        <div class="ss-notif">
+          <span class="ss-notif__icon">${notifIconFor(t.device)}</span>
+          <div class="ss-notif__body">
+            <div class="ss-notif__label">Timer agendado</div>
+            <div class="ss-notif__detail">${label} — ${action} às ${t.time}</div>
+          </div>
+        </div>`;
+    })
+    .join("");
+
+  wrap.classList.remove("hidden");
+}
+
+let notifExpanded = false;
+
+function setNotifExpanded(expanded) {
+  notifExpanded = expanded;
+  document.getElementById("ss-notif-stack").classList.toggle("hidden", expanded);
+  document.getElementById("ss-notif-list").classList.toggle("hidden", !expanded);
+}
+
+// Toque na notificação: expande/colapsa a lista, sem acordar a tela de proteção
+function toggleNotifExpanded(event) {
+  event.stopPropagation();
+  setNotifExpanded(!notifExpanded);
+}
+
 /* ---------- Navegação entre telas ---------- */
+
+// Lembra qual era a tela ativa para restaurá-la ao acordar a tela de proteção
+let lastScreen = { type: "panel" };
 
 function showScreensaver() {
   document.getElementById("screensaver").classList.remove("hidden");
@@ -46,20 +120,40 @@ function showScreensaver() {
   document.getElementById("detail-modal").classList.add("hidden");
   document.getElementById("timer-modal").classList.add("hidden");
   stopIdleTimer();
+  setNotifExpanded(false);
+  renderScreensaverNotifications();
 }
 
 function showPanel() {
   document.getElementById("screensaver").classList.add("hidden");
   document.getElementById("panel").classList.remove("hidden");
+  lastScreen = { type: "panel" };
   resetIdleTimer();
+}
+
+// Toque na tela de proteção: volta para a mesma tela que estava aberta antes de bloquear
+function wakeFromScreensaver() {
+  document.getElementById("screensaver").classList.add("hidden");
+  document.getElementById("panel").classList.remove("hidden");
+
+  if (lastScreen.type === "detail") {
+    openDetailModal(lastScreen.detailType);
+  } else if (lastScreen.type === "timer") {
+    openTimerModal();
+  } else {
+    lastScreen = { type: "panel" };
+    resetIdleTimer();
+  }
 }
 
 /* ---------- Auto-retorno por inatividade ---------- */
 
 let idleTimer = null;
+let idlePaused = false; // true enquanto a página do Relógio estiver aberta
 
 function resetIdleTimer() {
   clearTimeout(idleTimer);
+  if (idlePaused) return;
   idleTimer = setTimeout(showScreensaver, IDLE_TIMEOUT_MS);
 }
 
@@ -154,12 +248,25 @@ let currentDetailType = null;
 
 async function openDetailModal(type) {
   currentDetailType = type;
+  lastScreen = { type: "detail", detailType: type };
+
+  // A página do Relógio não deve deixar a proteção de tela entrar em contagem
+  idlePaused = type === "clock";
+  if (idlePaused) {
+    stopIdleTimer();
+  } else {
+    resetIdleTimer();
+  }
+
   document.getElementById("detail-modal").classList.remove("hidden");
   await renderDetailBody(type);
 }
 
 function closeDetailModal() {
   document.getElementById("detail-modal").classList.add("hidden");
+  idlePaused = false;
+  lastScreen = { type: "panel" };
+  resetIdleTimer();
 }
 
 async function renderDetailBody(type) {
@@ -236,24 +343,26 @@ async function renderDetailBody(type) {
 
   if (type === "weather") {
     body.innerHTML = `
-      <div class="weather-summary">
-        <span class="weather-summary__temp">${state.weather.temp}°C</span>
-        <span class="weather-summary__condition">${state.weather.condition}</span>
-      </div>
-      <div class="weather-stats">
-        <span>Sensação: <strong>${state.weather.feelsLike}°C</strong></span>
-        <span>Umidade: <strong>${state.weather.humidity}%</strong></span>
-      </div>
-      <div class="forecast-list">
-        ${state.weather.forecast
-          .map(
-            (f) => `
-          <div class="forecast-item">
-            <div class="forecast-item__hour">${f.hour}</div>
-            <div class="forecast-item__temp">${f.temp}°C</div>
-          </div>`
-          )
-          .join("")}
+      <div class="weather-page">
+        <div class="weather-summary">
+          <span class="weather-summary__temp">${state.weather.temp}°C</span>
+          <span class="weather-summary__condition">${state.weather.condition}</span>
+        </div>
+        <div class="weather-stats">
+          <span>Sensação: <strong>${state.weather.feelsLike}°C</strong></span>
+          <span>Umidade: <strong>${state.weather.humidity}%</strong></span>
+        </div>
+        <div class="forecast-list">
+          ${state.weather.forecast
+            .map(
+              (f) => `
+            <div class="forecast-item">
+              <div class="forecast-item__hour">${f.hour}</div>
+              <div class="forecast-item__temp">${f.temp}°C</div>
+            </div>`
+            )
+            .join("")}
+        </div>
       </div>
     `;
     return;
@@ -323,6 +432,10 @@ function buildTimeOptions(selected) {
 }
 
 async function openTimerModal() {
+  lastScreen = { type: "timer" };
+  idlePaused = false;
+  resetIdleTimer();
+
   const state = await DataProvider.getState();
   const devices = deviceOptions(state);
 
@@ -348,6 +461,8 @@ async function openTimerModal() {
 
 function closeTimerModal() {
   document.getElementById("timer-modal").classList.add("hidden");
+  lastScreen = { type: "panel" };
+  resetIdleTimer();
 }
 
 function handleTimerDeviceClick(event) {
@@ -375,27 +490,61 @@ async function renderTimerList() {
 
   if (state.timers.length === 0) {
     list.innerHTML = `<div class="timer-list__empty">Nenhum timer agendado</div>`;
-    return;
+  } else {
+    list.innerHTML = state.timers
+      .map(
+        (t) => `
+        <div class="timer-item" data-id="${t.id}">
+          <span>${labels[t.device] || t.device} — ${t.action === "on" ? "Ligar" : "Desligar"} às ${t.time}</span>
+          <button class="timer-item__remove" data-id="${t.id}" aria-label="Remover">✕</button>
+        </div>`
+      )
+      .join("");
   }
 
-  list.innerHTML = state.timers
-    .map(
-      (t) => `
-      <div class="timer-item" data-id="${t.id}">
-        <span>${labels[t.device] || t.device} — ${t.action === "on" ? "Ligar" : "Desligar"} às ${t.time}</span>
-        <button class="timer-item__remove" data-id="${t.id}" aria-label="Remover">✕</button>
-      </div>`
-    )
-    .join("");
+  updateTimerBodyCentering();
+}
+
+// Só centraliza a lista + formulário quando cabem sem rolagem — evita o problema
+// de flexbox onde "justify-content: center" torna o topo do conteúdo inacessível
+// ao rolar quando o conteúdo excede a altura da tela.
+function updateTimerBodyCentering() {
+  const body = document.getElementById("timer-body");
+  body.classList.toggle("is-centered", body.scrollHeight <= body.clientHeight);
 }
 
 async function handleTimerAdd() {
   if (!timerSelectedDevice) return;
   const time = document.getElementById("timer-time").value || "00:00";
+  const device = timerSelectedDevice;
+  const action = timerSelectedAction;
 
-  await DataProvider.addTimer({ device: timerSelectedDevice, action: timerSelectedAction, time });
+  await DataProvider.addTimer({ device, action, time });
   await renderTimerList();
   await renderTiles();
+
+  const state = await DataProvider.getState();
+  const deviceLabel = DEVICE_LABEL_MAP(state)[device] || device;
+  showTimerConfirm(deviceLabel, action, time);
+}
+
+/* ---------- Popup de confirmação do Timer ---------- */
+
+let timerConfirmAutoHide = null;
+
+function showTimerConfirm(deviceLabel, action, time) {
+  document.getElementById("timer-confirm-device").textContent = deviceLabel;
+  document.getElementById("timer-confirm-action").textContent = action === "on" ? "Ligar" : "Desligar";
+  document.getElementById("timer-confirm-time").textContent = time;
+
+  document.getElementById("timer-confirm").classList.remove("hidden");
+  clearTimeout(timerConfirmAutoHide);
+  timerConfirmAutoHide = setTimeout(hideTimerConfirm, 3000);
+}
+
+function hideTimerConfirm() {
+  document.getElementById("timer-confirm").classList.add("hidden");
+  clearTimeout(timerConfirmAutoHide);
 }
 
 async function handleTimerListClick(event) {
@@ -407,9 +556,14 @@ async function handleTimerListClick(event) {
   await renderTiles();
 }
 
+function scrollTimerBody(direction) {
+  document.getElementById("timer-body").scrollBy({ top: direction * 180, behavior: "smooth" });
+}
+
 /* ---------- Wiring ---------- */
 
-document.getElementById("screensaver").addEventListener("click", showPanel);
+document.getElementById("screensaver").addEventListener("click", wakeFromScreensaver);
+document.getElementById("ss-notifications").addEventListener("click", toggleNotifExpanded);
 document.getElementById("tile-grid").addEventListener("click", handleTileClick);
 
 document.getElementById("detail-back").addEventListener("click", closeDetailModal);
@@ -420,6 +574,13 @@ document.getElementById("timer-device-buttons").addEventListener("click", handle
 document.getElementById("timer-action-buttons").addEventListener("click", handleTimerActionClick);
 document.getElementById("timer-add").addEventListener("click", handleTimerAdd);
 document.getElementById("timer-list").addEventListener("click", handleTimerListClick);
+document.getElementById("timer-scroll-up").addEventListener("click", () => scrollTimerBody(-1));
+document.getElementById("timer-scroll-down").addEventListener("click", () => scrollTimerBody(1));
+
+document.getElementById("timer-confirm-ok").addEventListener("click", hideTimerConfirm);
+document.getElementById("timer-confirm").addEventListener("click", (event) => {
+  if (event.target.id === "timer-confirm") hideTimerConfirm();
+});
 
 // Qualquer toque/clique no painel ou nos modais reinicia o contador de inatividade
 ["click", "touchstart"].forEach((evt) => {
@@ -429,5 +590,6 @@ document.getElementById("timer-list").addEventListener("click", handleTimerListC
 });
 
 renderTiles();
+renderScreensaverNotifications();
 updateClocks();
 setInterval(updateClocks, 1000);
