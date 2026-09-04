@@ -5,9 +5,9 @@
  * pelo Node-RED, sem precisar tocar em app.js.
  */
 const DataProvider = (() => {
-  const MODE = "mock"; // "mock" | "live"
-
-  let state = {
+  const MODE = "live";
+  const NODE_RED_URL = "https://violet-beaver-178312.hostingersite.com";
+    let state = {
     lights: [
       { id: "light-1", label: "Luz principal", on: true },
       { id: "light-2", label: "Luz de mesa", on: false },
@@ -63,34 +63,61 @@ const DataProvider = (() => {
   }
 
   async function setAcOn(on) {
-    if (MODE === "live") {
-      // await fetch("http://<node-red-host>:1880/api/ac", {
-      //   method: "POST", headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ on }),
-      // });
+  if (MODE === "live") {
+    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ on })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
     }
-    state.ac.on = on;
   }
 
-  async function setAcTemp(temp) {
-    if (MODE === "live") {
-      // await fetch("http://<node-red-host>:1880/api/ac", {
-      //   method: "POST", headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ temp }),
-      // });
+  state.ac.on = on;
+}
+
+ async function setAcTemp(temp) {
+  if (MODE === "live") {
+    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ temp })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
     }
-    state.ac.temp = temp;
   }
+
+  state.ac.temp = temp;
+}
 
   async function setAcMode(mode) {
-    if (MODE === "live") {
-      // await fetch("http://<node-red-host>:1880/api/ac", {
-      //   method: "POST", headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ mode }),
-      // });
+  if (MODE === "live") {
+    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ mode })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
     }
-    state.ac.mode = mode;
   }
+
+  state.ac.mode = mode;
+}
 
   async function addTimer(timer) {
     const entry = { id: `t${Date.now()}`, ...timer };
