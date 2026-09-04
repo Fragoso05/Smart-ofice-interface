@@ -298,31 +298,24 @@ const DataProvider = (() => {
   // SAMSUNG WINDFREE
   // LIGAR / DESLIGAR
   // ============================================================
+async function setAcOn(on) {
+  if (MODE === "live") {
+    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ on })
+    });
 
-  async function setAcOn(on) {
-
-    const value = Boolean(on);
-
-
-    if (MODE === "live") {
-
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            on: value,
-          }),
-        }
-      );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
     }
-
-
-    state.ac.on = value;
-
-    persist();
   }
+
+  state.ac.on = on;
+}
 
 
   // ============================================================
@@ -330,37 +323,24 @@ const DataProvider = (() => {
   // TEMPERATURA
   // ============================================================
 
-  async function setAcTemp(temp) {
+ async function setAcTemp(temp) {
+  if (MODE === "live") {
+    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ temp })
+    });
 
-    const value = Number(temp);
-
-
-    if (!Number.isFinite(value)) {
-      throw new Error(
-        "Temperatura inválida"
-      );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
     }
-
-
-    if (MODE === "live") {
-
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            temp: value,
-          }),
-        }
-      );
-    }
-
-
-    state.ac.temp = value;
-
-    persist();
   }
+
+  state.ac.temp = temp;
+}
 
 
   // ============================================================
@@ -368,43 +348,24 @@ const DataProvider = (() => {
   // MODO
   // ============================================================
 
-  async function setAcMode(mode) {
+ async function setAcMode(mode) {
+  if (MODE === "live") {
+    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ mode })
+    });
 
-    const allowedModes = [
-      "cool",
-      "fan",
-      "dry",
-    ];
-
-
-    if (!allowedModes.includes(mode)) {
-
-      throw new Error(
-        `Modo de AC inválido: ${mode}`
-      );
-
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
     }
-
-
-    if (MODE === "live") {
-
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            mode,
-          }),
-        }
-      );
-    }
-
-
-    state.ac.mode = mode;
-
-    persist();
   }
+
+  state.ac.mode = mode;
+}
 
 
   // ============================================================
