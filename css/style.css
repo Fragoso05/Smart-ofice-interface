@@ -85,12 +85,14 @@ html, body {
   text-transform: capitalize;
 }
 
-/* Notificação de timer na tela de proteção — estilo lock screen, pilha de cartões */
+/* Notificações de timer na tela de proteção — estilo lock screen.
+   Estado padrão: pilha de cartões. Toque: expande para a lista completa (rolável). */
 .ss-notifications {
   position: absolute;
   right: 40px;
   bottom: 40px;
   width: min(42vw, 340px);
+  cursor: pointer;
 }
 
 .ss-notif-stack {
@@ -133,9 +135,27 @@ html, body {
   transform: translateY(0);
 }
 
+/* Lista completa, revelada ao tocar na pilha */
+.ss-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.ss-notif-list::-webkit-scrollbar {
+  display: none;
+}
+
 .ss-notif {
   position: relative;
   z-index: 2;
+  flex-shrink: 0;
   width: 100%;
   display: flex;
   align-items: center;
@@ -147,7 +167,7 @@ html, body {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  animation: ss-notif-in 0.35s ease;
+  animation: ss-notif-in 0.3s ease;
 }
 
 @keyframes ss-notif-in {
@@ -354,6 +374,13 @@ html, body {
 
 .modal-body::-webkit-scrollbar {
   display: none; /* Chrome/Chromium (Pi) */
+}
+
+/* Timer: centraliza a lista + formulário na tela quando cabem sem rolagem.
+   Aplicado via JS (classe is-centered) — "justify-content: center" fixo quebraria
+   o acesso ao topo por scroll quando o conteúdo excede a tela. */
+#timer-body.is-centered {
+  justify-content: center;
 }
 
 /* Botões de rolar (Timer): um no topo, outro embaixo — sem barra de scroll visível */
@@ -670,7 +697,7 @@ html, body {
 }
 
 .chip-grid .mode-chip {
-  min-height: 76px;
+  min-height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -683,7 +710,7 @@ html, body {
   color: var(--text);
   padding: 12px 14px;
   font-size: 1.1rem;
-  min-height: 72px;
+  min-height: 84px;
 }
 
 .timer-form__add {
@@ -693,7 +720,7 @@ html, body {
   color: #061018;
   font-weight: 600;
   font-size: 1.15rem;
-  min-height: 76px;
+  min-height: 92px;
   cursor: pointer;
   margin-top: 8px;
 }

@@ -16,9 +16,9 @@
       <div id="ss-date" class="screensaver__date">-- de -- de ----</div>
     </div>
 
-    <!-- Notificações de timer, estilo lock screen — pilha de cartões quando há mais de uma -->
+    <!-- Notificações de timer, estilo lock screen — pilha de cartões; toque expande a lista completa -->
     <div id="ss-notifications" class="ss-notifications hidden">
-      <div class="ss-notif-stack">
+      <div class="ss-notif-stack" id="ss-notif-stack">
         <div class="ss-notif-ghost ss-notif-ghost--2" id="ss-notif-ghost-2"></div>
         <div class="ss-notif-ghost ss-notif-ghost--1" id="ss-notif-ghost-1"></div>
         <div class="ss-notif">
@@ -30,6 +30,7 @@
           <span class="ss-notif__count hidden" id="ss-notif-count"></span>
         </div>
       </div>
+      <div class="ss-notif-list hidden" id="ss-notif-list"></div>
     </div>
   </section>
 

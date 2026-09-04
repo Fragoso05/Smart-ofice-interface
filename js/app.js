@@ -44,7 +44,7 @@ function notifIconFor(deviceId) {
   return ICONS.light;
 }
 
-// Mostra o timer mais recente como notificação na tela de proteção
+// Mostra o timer mais recente como pilha na tela de proteção; toque expande a lista completa
 async function renderScreensaverNotifications() {
   const state = await DataProvider.getState();
   const wrap = document.getElementById("ss-notifications");
@@ -55,15 +55,16 @@ async function renderScreensaverNotifications() {
   }
 
   const labels = DEVICE_LABEL_MAP(state);
-  const latest = state.timers[state.timers.length - 1];
+  const ordered = [...state.timers].reverse(); // mais recente primeiro
+  const latest = ordered[0];
   const deviceLabel = labels[latest.device] || latest.device;
   const actionLabel = latest.action === "on" ? "Ligar" : "Desligar";
 
   document.getElementById("ss-notif-icon").innerHTML = notifIconFor(latest.device);
   document.getElementById("ss-notif-detail").textContent = `${deviceLabel} — ${actionLabel} às ${latest.time}`;
 
-  // Pilha de cartões: cada timer extra revela mais um "fantasma" atrás do principal
-  const remaining = state.timers.length - 1;
+  // Pilha: cada timer extra revela mais um "fantasma" atrás do principal
+  const remaining = ordered.length - 1;
   document.getElementById("ss-notif-ghost-1").classList.toggle("hidden", remaining < 1);
   document.getElementById("ss-notif-ghost-2").classList.toggle("hidden", remaining < 2);
 
@@ -75,7 +76,37 @@ async function renderScreensaverNotifications() {
     countEl.classList.add("hidden");
   }
 
+  // Lista completa, revelada ao expandir
+  document.getElementById("ss-notif-list").innerHTML = ordered
+    .map((t) => {
+      const label = labels[t.device] || t.device;
+      const action = t.action === "on" ? "Ligar" : "Desligar";
+      return `
+        <div class="ss-notif">
+          <span class="ss-notif__icon">${notifIconFor(t.device)}</span>
+          <div class="ss-notif__body">
+            <div class="ss-notif__label">Timer agendado</div>
+            <div class="ss-notif__detail">${label} — ${action} às ${t.time}</div>
+          </div>
+        </div>`;
+    })
+    .join("");
+
   wrap.classList.remove("hidden");
+}
+
+let notifExpanded = false;
+
+function setNotifExpanded(expanded) {
+  notifExpanded = expanded;
+  document.getElementById("ss-notif-stack").classList.toggle("hidden", expanded);
+  document.getElementById("ss-notif-list").classList.toggle("hidden", !expanded);
+}
+
+// Toque na notificação: expande/colapsa a lista, sem acordar a tela de proteção
+function toggleNotifExpanded(event) {
+  event.stopPropagation();
+  setNotifExpanded(!notifExpanded);
 }
 
 /* ---------- Navegação entre telas ---------- */
@@ -89,6 +120,7 @@ function showScreensaver() {
   document.getElementById("detail-modal").classList.add("hidden");
   document.getElementById("timer-modal").classList.add("hidden");
   stopIdleTimer();
+  setNotifExpanded(false);
   renderScreensaverNotifications();
 }
 
@@ -458,18 +490,27 @@ async function renderTimerList() {
 
   if (state.timers.length === 0) {
     list.innerHTML = `<div class="timer-list__empty">Nenhum timer agendado</div>`;
-    return;
+  } else {
+    list.innerHTML = state.timers
+      .map(
+        (t) => `
+        <div class="timer-item" data-id="${t.id}">
+          <span>${labels[t.device] || t.device} — ${t.action === "on" ? "Ligar" : "Desligar"} às ${t.time}</span>
+          <button class="timer-item__remove" data-id="${t.id}" aria-label="Remover">✕</button>
+        </div>`
+      )
+      .join("");
   }
 
-  list.innerHTML = state.timers
-    .map(
-      (t) => `
-      <div class="timer-item" data-id="${t.id}">
-        <span>${labels[t.device] || t.device} — ${t.action === "on" ? "Ligar" : "Desligar"} às ${t.time}</span>
-        <button class="timer-item__remove" data-id="${t.id}" aria-label="Remover">✕</button>
-      </div>`
-    )
-    .join("");
+  updateTimerBodyCentering();
+}
+
+// Só centraliza a lista + formulário quando cabem sem rolagem — evita o problema
+// de flexbox onde "justify-content: center" torna o topo do conteúdo inacessível
+// ao rolar quando o conteúdo excede a altura da tela.
+function updateTimerBodyCentering() {
+  const body = document.getElementById("timer-body");
+  body.classList.toggle("is-centered", body.scrollHeight <= body.clientHeight);
 }
 
 async function handleTimerAdd() {
@@ -522,6 +563,7 @@ function scrollTimerBody(direction) {
 /* ---------- Wiring ---------- */
 
 document.getElementById("screensaver").addEventListener("click", wakeFromScreensaver);
+document.getElementById("ss-notifications").addEventListener("click", toggleNotifExpanded);
 document.getElementById("tile-grid").addEventListener("click", handleTileClick);
 
 document.getElementById("detail-back").addEventListener("click", closeDetailModal);
