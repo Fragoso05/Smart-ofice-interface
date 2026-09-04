@@ -85,6 +85,124 @@ html, body {
   text-transform: capitalize;
 }
 
+/* Notificação de timer na tela de proteção — estilo lock screen, pilha de cartões */
+.ss-notifications {
+  position: absolute;
+  right: 40px;
+  bottom: 40px;
+  width: min(42vw, 340px);
+}
+
+.ss-notif-stack {
+  position: relative;
+  width: 100%;
+}
+
+/* Cartões "fantasma" que espiam atrás do principal, indicando mais timers agendados */
+.ss-notif-ghost {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  border-radius: 18px;
+  background: rgba(38, 33, 51, 0.6);
+  border: 1px solid rgba(192, 132, 252, 0.18);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.ss-notif-ghost--1 {
+  left: 18px;
+  transform: translateY(-14px);
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.ss-notif-ghost--2 {
+  left: 36px;
+  transform: translateY(-26px);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.ss-notif-ghost.hidden {
+  opacity: 0;
+  transform: translateY(0);
+}
+
+.ss-notif {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)), rgba(23, 26, 33, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  animation: ss-notif-in 0.35s ease;
+}
+
+@keyframes ss-notif-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ss-notif__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(192, 132, 252, 0.16);
+  color: var(--c-timer);
+}
+
+.ss-notif__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ss-notif__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.ss-notif__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ss-notif__detail {
+  margin-top: 3px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.ss-notif__count {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--c-timer);
+  color: #1a0e2e;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 /* ---------- Painel: só os cards ---------- */
 .panel {
   display: flex;

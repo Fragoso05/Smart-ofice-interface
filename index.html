@@ -15,6 +15,22 @@
       <div id="ss-clock" class="screensaver__time">--:--</div>
       <div id="ss-date" class="screensaver__date">-- de -- de ----</div>
     </div>
+
+    <!-- Notificações de timer, estilo lock screen — pilha de cartões quando há mais de uma -->
+    <div id="ss-notifications" class="ss-notifications hidden">
+      <div class="ss-notif-stack">
+        <div class="ss-notif-ghost ss-notif-ghost--2" id="ss-notif-ghost-2"></div>
+        <div class="ss-notif-ghost ss-notif-ghost--1" id="ss-notif-ghost-1"></div>
+        <div class="ss-notif">
+          <span class="ss-notif__icon" id="ss-notif-icon"></span>
+          <div class="ss-notif__body">
+            <div class="ss-notif__label">Timer agendado</div>
+            <div class="ss-notif__detail" id="ss-notif-detail"></div>
+          </div>
+          <span class="ss-notif__count hidden" id="ss-notif-count"></span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Painel de controle: só os cards -->

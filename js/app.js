@@ -38,6 +38,46 @@ function updateClocks() {
   if (modalDate) modalDate.textContent = date;
 }
 
+function notifIconFor(deviceId) {
+  if (deviceId === "ac") return ICONS.ac;
+  if (deviceId.startsWith("outlet")) return ICONS.outlet;
+  return ICONS.light;
+}
+
+// Mostra o timer mais recente como notificação na tela de proteção
+async function renderScreensaverNotifications() {
+  const state = await DataProvider.getState();
+  const wrap = document.getElementById("ss-notifications");
+
+  if (state.timers.length === 0) {
+    wrap.classList.add("hidden");
+    return;
+  }
+
+  const labels = DEVICE_LABEL_MAP(state);
+  const latest = state.timers[state.timers.length - 1];
+  const deviceLabel = labels[latest.device] || latest.device;
+  const actionLabel = latest.action === "on" ? "Ligar" : "Desligar";
+
+  document.getElementById("ss-notif-icon").innerHTML = notifIconFor(latest.device);
+  document.getElementById("ss-notif-detail").textContent = `${deviceLabel} — ${actionLabel} às ${latest.time}`;
+
+  // Pilha de cartões: cada timer extra revela mais um "fantasma" atrás do principal
+  const remaining = state.timers.length - 1;
+  document.getElementById("ss-notif-ghost-1").classList.toggle("hidden", remaining < 1);
+  document.getElementById("ss-notif-ghost-2").classList.toggle("hidden", remaining < 2);
+
+  const countEl = document.getElementById("ss-notif-count");
+  if (remaining > 0) {
+    countEl.textContent = `+${remaining}`;
+    countEl.classList.remove("hidden");
+  } else {
+    countEl.classList.add("hidden");
+  }
+
+  wrap.classList.remove("hidden");
+}
+
 /* ---------- Navegação entre telas ---------- */
 
 // Lembra qual era a tela ativa para restaurá-la ao acordar a tela de proteção
@@ -49,6 +89,7 @@ function showScreensaver() {
   document.getElementById("detail-modal").classList.add("hidden");
   document.getElementById("timer-modal").classList.add("hidden");
   stopIdleTimer();
+  renderScreensaverNotifications();
 }
 
 function showPanel() {
@@ -507,5 +548,6 @@ document.getElementById("timer-confirm").addEventListener("click", (event) => {
 });
 
 renderTiles();
+renderScreensaverNotifications();
 updateClocks();
 setInterval(updateClocks, 1000);
