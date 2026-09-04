@@ -1,12 +1,3 @@
-/**
- * Smart Office - Data Provider
- *
- * Comunicação entre o frontend e o Node-RED.
- *
- * Node-RED:
- * https://violet-beaver-178312.hostingersite.com
- */
-
 const DataProvider = (() => {
 
   // ============================================================
@@ -173,54 +164,11 @@ const DataProvider = (() => {
   // ESTADO GERAL
   // ============================================================
 
-  async function getState() {
-
-    if (MODE === "live") {
-
-      try {
-
-        const remoteState =
-          await nodeRedFetch("/api/room");
-
-        /*
-         * Só substituímos o estado se Node-RED
-         * realmente devolver um objeto válido.
-         */
-
-        if (
-          remoteState &&
-          typeof remoteState === "object"
-        ) {
-
-          state = {
-            ...state,
-            ...remoteState,
-          };
-
-          persist();
-        }
-
-      } catch (error) {
-
-        /*
-         * Enquanto /api/room ainda não existir,
-         * o dashboard continua funcional usando
-         * o último estado local.
-         */
-
-        console.warn(
-          "[Smart Office] Estado remoto indisponível:",
-          error
-        );
-      }
-    }
-
-
-    return JSON.parse(
-      JSON.stringify(state)
-    );
-  }
-
+ async function getState() {
+  return JSON.parse(
+    JSON.stringify(state)
+  );
+}
 
   // ============================================================
   // LUZES
@@ -299,22 +247,26 @@ const DataProvider = (() => {
   // LIGAR / DESLIGAR
   // ============================================================
 async function setAcOn(on) {
-  if (MODE === "live") {
-    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ on })
-    });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
-    }
+  const value = Boolean(on);
+
+  if (MODE === "live") {
+
+    await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          on: value,
+        }),
+      }
+    );
   }
 
-  state.ac.on = on;
+  state.ac.on = value;
+
+  persist();
 }
 
 
@@ -323,23 +275,31 @@ async function setAcOn(on) {
   // TEMPERATURA
   // ============================================================
 
- async function setAcTemp(temp) {
-  if (MODE === "live") {
-    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ temp })
-    });
+async function setAcTemp(temp) {
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
-    }
+  const value = Number(temp);
+
+  if (!Number.isFinite(value)) {
+    throw new Error("Temperatura inválida");
   }
 
-  state.ac.temp = temp;
+  if (MODE === "live") {
+
+    await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          temp: value,
+        }),
+      }
+    );
+  }
+
+  state.ac.temp = value;
+
+  persist();
 }
 
 
@@ -347,24 +307,25 @@ async function setAcOn(on) {
   // SAMSUNG WINDFREE
   // MODO
   // ============================================================
+async function setAcMode(mode) {
 
- async function setAcMode(mode) {
   if (MODE === "live") {
-    const res = await fetch(`${NODE_RED_URL}/api/ac`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ mode })
-    });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Erro Node-RED: ${res.status} ${text}`);
-    }
+    await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          mode,
+        }),
+      }
+    );
   }
 
   state.ac.mode = mode;
+
+  persist();
 }
 
 
