@@ -48,14 +48,7 @@ const DataProvider = (() => {
       ],
     },
 
-    timers: [
-      {
-        id: "t1",
-        device: "ac",
-        action: "off",
-        time: "19:00",
-      },
-    ],
+    timers: [],
   };
 
 
