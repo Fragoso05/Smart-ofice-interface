@@ -178,16 +178,20 @@ const DataProvider = (() => {
 
     if (MODE === "live") {
 
-      await nodeRedFetch(
-        `/api/lights/${encodeURIComponent(id)}`,
-        {
-          method: "POST",
+      try {
+        await nodeRedFetch(
+          `/api/lights/${encodeURIComponent(id)}`,
+          {
+            method: "POST",
 
-          body: JSON.stringify({
-            on: Boolean(on),
-          }),
-        }
-      );
+            body: JSON.stringify({
+              on: Boolean(on),
+            }),
+          }
+        );
+      } catch (error) {
+        console.warn("[Smart Office] Falha ao avisar o Node-RED (luz):", error);
+      }
     }
 
 
@@ -214,16 +218,20 @@ const DataProvider = (() => {
 
     if (MODE === "live") {
 
-      await nodeRedFetch(
-        `/api/outlets/${encodeURIComponent(id)}`,
-        {
-          method: "POST",
+      try {
+        await nodeRedFetch(
+          `/api/outlets/${encodeURIComponent(id)}`,
+          {
+            method: "POST",
 
-          body: JSON.stringify({
-            on: Boolean(on),
-          }),
-        }
-      );
+            body: JSON.stringify({
+              on: Boolean(on),
+            }),
+          }
+        );
+      } catch (error) {
+        console.warn("[Smart Office] Falha ao avisar o Node-RED (tomada):", error);
+      }
     }
 
 
@@ -252,16 +260,20 @@ async function setAcOn(on) {
 
   if (MODE === "live") {
 
-    await nodeRedFetch(
-      "/api/ac",
-      {
-        method: "POST",
+    try {
+      await nodeRedFetch(
+        "/api/ac",
+        {
+          method: "POST",
 
-        body: JSON.stringify({
-          on: value,
-        }),
-      }
-    );
+          body: JSON.stringify({
+            on: value,
+          }),
+        }
+      );
+    } catch (error) {
+      console.warn("[Smart Office] Falha ao avisar o Node-RED (A.C. on/off):", error);
+    }
   }
 
   state.ac.on = value;
@@ -285,16 +297,20 @@ async function setAcTemp(temp) {
 
   if (MODE === "live") {
 
-    await nodeRedFetch(
-      "/api/ac",
-      {
-        method: "POST",
+    try {
+      await nodeRedFetch(
+        "/api/ac",
+        {
+          method: "POST",
 
-        body: JSON.stringify({
-          temp: value,
-        }),
-      }
-    );
+          body: JSON.stringify({
+            temp: value,
+          }),
+        }
+      );
+    } catch (error) {
+      console.warn("[Smart Office] Falha ao avisar o Node-RED (temperatura A.C.):", error);
+    }
   }
 
   state.ac.temp = value;
@@ -311,16 +327,20 @@ async function setAcMode(mode) {
 
   if (MODE === "live") {
 
-    await nodeRedFetch(
-      "/api/ac",
-      {
-        method: "POST",
+    try {
+      await nodeRedFetch(
+        "/api/ac",
+        {
+          method: "POST",
 
-        body: JSON.stringify({
-          mode,
-        }),
-      }
-    );
+          body: JSON.stringify({
+            mode,
+          }),
+        }
+      );
+    } catch (error) {
+      console.warn("[Smart Office] Falha ao avisar o Node-RED (modo A.C.):", error);
+    }
   }
 
   state.ac.mode = mode;
@@ -343,14 +363,18 @@ async function setAcMode(mode) {
 
     if (MODE === "live") {
 
-      await nodeRedFetch(
-        "/api/timers",
-        {
-          method: "POST",
+      try {
+        await nodeRedFetch(
+          "/api/timers",
+          {
+            method: "POST",
 
-          body: JSON.stringify(entry),
-        }
-      );
+            body: JSON.stringify(entry),
+          }
+        );
+      } catch (error) {
+        console.warn("[Smart Office] Falha ao avisar o Node-RED (criar timer):", error);
+      }
     }
 
 
@@ -367,12 +391,16 @@ async function setAcMode(mode) {
 
     if (MODE === "live") {
 
-      await nodeRedFetch(
-        `/api/timers/${encodeURIComponent(id)}`,
-        {
-          method: "DELETE",
-        }
-      );
+      try {
+        await nodeRedFetch(
+          `/api/timers/${encodeURIComponent(id)}`,
+          {
+            method: "DELETE",
+          }
+        );
+      } catch (error) {
+        console.warn("[Smart Office] Falha ao avisar o Node-RED (remover timer):", error);
+      }
     }
 
 
