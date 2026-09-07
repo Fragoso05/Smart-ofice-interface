@@ -383,23 +383,37 @@ html, body {
   justify-content: center;
 }
 
-/* Botões de rolar (Timer): um no topo, outro embaixo — sem barra de scroll visível */
+/* Layout do Timer em duas colunas: conteúdo rolável + coluna isolada para as setas
+   de rolar. Antes as setas ficavam fixas por cima do conteúdo e podiam bloquear
+   toques no "Adicionar" e no "remover" — agora cada uma tem seu próprio espaço. */
+.timer-layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.timer-layout__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.timer-layout__scroll {
+  flex-shrink: 0;
+  width: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px 16px;
+  border-left: 1px solid var(--border);
+}
+
 .scroll-btn {
-  position: absolute;
-  right: 20px;
-  z-index: 5;
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   background: var(--surface-hover);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-}
-
-.scroll-btn--top {
-  top: 20px;
-}
-
-.scroll-btn--bottom {
-  bottom: 20px;
 }
 
 /* Lista de sub-dispositivos (luzes, tomadas) */
