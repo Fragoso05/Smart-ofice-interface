@@ -375,24 +375,30 @@ async function handleDetailBodyClick(event) {
 
   const kind = target.dataset.kind;
 
-  if (kind === "light") {
-    const on = !target.classList.contains("is-on");
-    await DataProvider.setLightOn(target.dataset.id, on);
-  } else if (kind === "outlet") {
-    const on = !target.classList.contains("is-on");
-    await DataProvider.setOutletOn(target.dataset.id, on);
-  } else if (kind === "ac-power") {
-    const on = !target.classList.contains("is-on");
-    await DataProvider.setAcOn(on);
-  } else if (kind === "ac-temp-down") {
-    const state = await DataProvider.getState();
-    await DataProvider.setAcTemp(Math.max(16, state.ac.temp - 1));
-  } else if (kind === "ac-temp-up") {
-    const state = await DataProvider.getState();
-    await DataProvider.setAcTemp(Math.min(30, state.ac.temp + 1));
-  } else if (kind === "ac-mode") {
-    await DataProvider.setAcMode(target.dataset.value);
-  } else {
+  try {
+    if (kind === "light") {
+      const on = !target.classList.contains("is-on");
+      await DataProvider.setLightOn(target.dataset.id, on);
+    } else if (kind === "outlet") {
+      const on = !target.classList.contains("is-on");
+      await DataProvider.setOutletOn(target.dataset.id, on);
+    } else if (kind === "ac-power") {
+      const on = !target.classList.contains("is-on");
+      await DataProvider.setAcOn(on);
+    } else if (kind === "ac-temp-down") {
+      const state = await DataProvider.getState();
+      await DataProvider.setAcTemp(Math.max(16, state.ac.temp - 1));
+    } else if (kind === "ac-temp-up") {
+      const state = await DataProvider.getState();
+      await DataProvider.setAcTemp(Math.min(30, state.ac.temp + 1));
+    } else if (kind === "ac-mode") {
+      await DataProvider.setAcMode(target.dataset.value);
+    } else {
+      return;
+    }
+  } catch (error) {
+    // Node-RED falhou (ex.: CORS, rede em baixo) — não re-renderiza, o estado local não mudou.
+    console.error("[Smart Office] Ação não aplicada:", error);
     return;
   }
 

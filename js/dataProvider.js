@@ -7,9 +7,12 @@ const DataProvider = (() => {
   const MODE = "live"; // "mock" | "live"
 
   const NODE_RED_URL =
-    "https://violet-beaver-178312.hostingersite.com";
+    "http://10.11.0.210:1880"; // URL do Node-RED (HTTP, sem TLS — Node-RED no Raspberry Pi não expõe HTTPS nesta porta)
 
   const STORAGE_KEY = "smartOfficeState";
+
+  const AC_TEMP_MIN = 16;
+  const AC_TEMP_MAX = 30;
 
 
   // ============================================================
@@ -105,19 +108,32 @@ const DataProvider = (() => {
   async function nodeRedFetch(endpoint, options = {}) {
 
     const url = `${NODE_RED_URL}${endpoint}`;
+    const method = options.method || "GET";
 
     console.log(
-      `[Smart Office] ${options.method || "GET"} ${url}`
+      `[Smart Office] ${method} ${url}`,
+      options.body || ""
     );
 
-    const response = await fetch(url, {
-      ...options,
+    let response;
 
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
-    });
+    try {
+      response = await fetch(url, {
+        ...options,
+
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+        },
+      });
+    } catch (networkError) {
+      console.error(
+        `[Smart Office] Falha de rede ao contactar o Node-RED em ${url}. ` +
+        "Verifica se o Raspberry Pi está ligado, se o IP/porta estão corretos e se o Node-RED tem CORS configurado (ver NODE_RED_CORS_SETUP.md).",
+        networkError
+      );
+      throw networkError;
+    }
 
 
     if (!response.ok) {
@@ -128,10 +144,16 @@ const DataProvider = (() => {
         errorBody = await response.text();
       } catch (_) {}
 
-      throw new Error(
+      const error = new Error(
         `Node-RED respondeu ${response.status}: ${errorBody}`
       );
+
+      console.error(`[Smart Office] ${method} ${url} falhou:`, error.message);
+
+      throw error;
     }
+
+    console.log(`[Smart Office] ${method} ${url} OK (${response.status})`);
 
 
     // Alguns endpoints podem devolver 204 No Content
@@ -248,29 +270,27 @@ const DataProvider = (() => {
   // LIGAR / DESLIGAR
   // ============================================================
 async function setAcOn(on) {
-
   const value = Boolean(on);
 
   if (MODE === "live") {
+    // Se o Node-RED falhar, nodeRedFetch lança e o estado local NÃO é alterado.
+    const result = await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          on: value,
+        }),
+      }
+    );
 
-    try {
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            on: value,
-          }),
-        }
-      );
-    } catch (error) {
-      console.warn("[Smart Office] Falha ao avisar o Node-RED (A.C. on/off):", error);
-    }
+    console.log(
+      "[Smart Office] AC on/off confirmado pelo Node-RED:",
+      result
+    );
   }
 
   state.ac.on = value;
-
   persist();
 }
 
@@ -288,22 +308,29 @@ async function setAcTemp(temp) {
     throw new Error("Temperatura inválida");
   }
 
+  if (value < AC_TEMP_MIN || value > AC_TEMP_MAX) {
+    throw new Error(
+      `Temperatura fora do intervalo permitido (${AC_TEMP_MIN}–${AC_TEMP_MAX}°C)`
+    );
+  }
+
   if (MODE === "live") {
+    // Se o Node-RED falhar, nodeRedFetch lança e o estado local NÃO é alterado.
+    const result = await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
 
-    try {
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
+        body: JSON.stringify({
+          temp: value,
+        }),
+      }
+    );
 
-          body: JSON.stringify({
-            temp: value,
-          }),
-        }
-      );
-    } catch (error) {
-      console.warn("[Smart Office] Falha ao avisar o Node-RED (temperatura A.C.):", error);
-    }
+    console.log(
+      "[Smart Office] AC temperatura confirmada pelo Node-RED:",
+      result
+    );
   }
 
   state.ac.temp = value;
@@ -319,21 +346,22 @@ async function setAcTemp(temp) {
 async function setAcMode(mode) {
 
   if (MODE === "live") {
+    // Se o Node-RED falhar, nodeRedFetch lança e o estado local NÃO é alterado.
+    const result = await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
 
-    try {
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
+        body: JSON.stringify({
+          mode,
+        }),
+      }
+    );
 
-          body: JSON.stringify({
-            mode,
-          }),
-        }
-      );
-    } catch (error) {
-      console.warn("[Smart Office] Falha ao avisar o Node-RED (modo A.C.):", error);
-    }
+    console.log(
+      "[Smart Office] AC modo confirmado pelo Node-RED:",
+      result
+    );
   }
 
   state.ac.mode = mode;
