@@ -122,7 +122,7 @@ const DataProvider = (() => {
         ...options,
 
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "text/plain",
           ...(options.headers || {}),
         },
       });
