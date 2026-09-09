@@ -232,13 +232,30 @@ async function renderTiles() {
 
 async function handleTileClick(event) {
   const tile = event.target.closest(".tile");
+
   if (!tile) return;
 
   const modal = tile.dataset.modal;
+
   if (modal === "timer") {
+
     openTimerModal();
+
+  } else if (modal === "weather") {
+
+    // Busca dados reais antes de abrir o clima
+    await DataProvider.refreshWeather();
+
+    // Atualiza o cartão principal
+    await renderTiles();
+
+    // Abre detalhes
+    await openDetailModal("weather");
+
   } else {
+
     openDetailModal(modal);
+
   }
 }
 
@@ -595,7 +612,26 @@ document.getElementById("timer-confirm").addEventListener("click", (event) => {
   document.getElementById("timer-modal").addEventListener(evt, resetIdleTimer);
 });
 
-renderTiles();
-renderScreensaverNotifications();
-updateClocks();
-setInterval(updateClocks, 1000);
+async function initializeSmartOffice() {
+
+  await DataProvider.refreshWeather();
+
+  await renderTiles();
+
+  renderScreensaverNotifications();
+
+  updateClocks();
+
+  setInterval(updateClocks, 1000);
+
+  // Atualiza clima a cada 15 minutos
+  setInterval(async () => {
+
+    await DataProvider.refreshWeather();
+
+    await renderTiles();
+
+  }, 15 * 60 * 1000);
+}
+
+initializeSmartOffice();
