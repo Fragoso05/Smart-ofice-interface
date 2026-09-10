@@ -6,7 +6,7 @@ const DataProvider = (() => {
 
   const MODE = "live"; // "mock" | "live"
 
- const NODE_RED_URL = "https://impacts-industry-noticed-minority.trycloudflare.com";
+ const NODE_RED_URL = "http://10.11.0.210:1880";
   const STORAGE_KEY = "smartOfficeState";
 
   const AC_TEMP_MIN = 16;
@@ -477,29 +477,28 @@ async function setAcTemp(temp) {
   // MODO
   // ============================================================
 async function setAcMode(mode) {
+    const currentTemp = Number(state.ac.temp);
 
-  if (MODE === "live") {
-    // Se o Node-RED falhar, nodeRedFetch lança e o estado local NÃO é alterado.
-    const result = await nodeRedFetch(
-      "/api/ac",
-      {
-        method: "POST",
+    if (MODE === "live") {
+        const result = await nodeRedFetch(
+            "/api/ac",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    mode,
+                    temp: currentTemp
+                }),
+            }
+        );
 
-        body: JSON.stringify({
-          mode,
-        }),
-      }
-    );
+        console.log(
+            "[Smart Office] AC modo confirmado pelo Node-RED:",
+            result
+        );
+    }
 
-    console.log(
-      "[Smart Office] AC modo confirmado pelo Node-RED:",
-      result
-    );
-  }
-
-  state.ac.mode = mode;
-
-  persist();
+    state.ac.mode = mode;
+    persist();
 }
 
 
