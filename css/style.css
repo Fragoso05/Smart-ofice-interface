@@ -557,6 +557,27 @@ html, body {
   background: rgba(79, 157, 255, 0.1);
 }
 
+.ac-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+
+/* Velocidade da ventoinha: 5 botões touch-friendly, 3 por linha (2 na última linha) */
+.mode-chips--fan {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 420px) {
+  .mode-chips--fan {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Modal de Clima — valor centralizado na tela, informações logo abaixo */
 .weather-page {
   flex: 1;

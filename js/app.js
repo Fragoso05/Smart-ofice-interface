@@ -8,6 +8,7 @@ const ICONS = {
 };
 
 const AC_MODES = { cool: "Frio", fan: "Ventilar", dry: "Desumidificar" };
+const AC_FAN_SPEEDS = { auto: "Auto", low: "Baixo", medium: "Médio", high: "Alto", turbo: "Turbo" };
 const IDLE_TIMEOUT_MS = 15 * 1000;
 
 function pad(n) {
@@ -232,13 +233,30 @@ async function renderTiles() {
 
 async function handleTileClick(event) {
   const tile = event.target.closest(".tile");
+
   if (!tile) return;
 
   const modal = tile.dataset.modal;
+
   if (modal === "timer") {
+
     openTimerModal();
+
+  } else if (modal === "weather") {
+
+    // Busca dados reais antes de abrir o clima
+    await DataProvider.refreshWeather();
+
+    // Atualiza o cartão principal
+    await renderTiles();
+
+    // Abre detalhes
+    await openDetailModal("weather");
+
   } else {
+
     openDetailModal(modal);
+
   }
 }
 
@@ -340,6 +358,15 @@ async function renderDetailBody(type) {
           )
           .join("")}
       </div>
+      <div class="ac-section-label">Velocidade da ventoinha</div>
+      <div class="mode-chips mode-chips--fan">
+        ${Object.entries(AC_FAN_SPEEDS)
+          .map(
+            ([value, label]) => `
+          <div class="mode-chip ${state.ac.fan === value ? "is-active" : ""}" data-kind="ac-fan" data-value="${value}">${label}</div>`
+          )
+          .join("")}
+      </div>
     `;
     return;
   }
@@ -378,24 +405,32 @@ async function handleDetailBodyClick(event) {
 
   const kind = target.dataset.kind;
 
-  if (kind === "light") {
-    const on = !target.classList.contains("is-on");
-    await DataProvider.setLightOn(target.dataset.id, on);
-  } else if (kind === "outlet") {
-    const on = !target.classList.contains("is-on");
-    await DataProvider.setOutletOn(target.dataset.id, on);
-  } else if (kind === "ac-power") {
-    const on = !target.classList.contains("is-on");
-    await DataProvider.setAcOn(on);
-  } else if (kind === "ac-temp-down") {
-    const state = await DataProvider.getState();
-    await DataProvider.setAcTemp(Math.max(16, state.ac.temp - 1));
-  } else if (kind === "ac-temp-up") {
-    const state = await DataProvider.getState();
-    await DataProvider.setAcTemp(Math.min(30, state.ac.temp + 1));
-  } else if (kind === "ac-mode") {
-    await DataProvider.setAcMode(target.dataset.value);
-  } else {
+  try {
+    if (kind === "light") {
+      const on = !target.classList.contains("is-on");
+      await DataProvider.setLightOn(target.dataset.id, on);
+    } else if (kind === "outlet") {
+      const on = !target.classList.contains("is-on");
+      await DataProvider.setOutletOn(target.dataset.id, on);
+    } else if (kind === "ac-power") {
+      const on = !target.classList.contains("is-on");
+      await DataProvider.setAcOn(on);
+    } else if (kind === "ac-temp-down") {
+      const state = await DataProvider.getState();
+      await DataProvider.setAcTemp(Math.max(16, state.ac.temp - 1));
+    } else if (kind === "ac-temp-up") {
+      const state = await DataProvider.getState();
+      await DataProvider.setAcTemp(Math.min(30, state.ac.temp + 1));
+    } else if (kind === "ac-mode") {
+      await DataProvider.setAcMode(target.dataset.value);
+    } else if (kind === "ac-fan") {
+      await DataProvider.setAcFan(target.dataset.value);
+    } else {
+      return;
+    }
+  } catch (error) {
+    // Node-RED falhou (ex.: CORS, rede em baixo) — não re-renderiza, o estado local não mudou.
+    console.error("[Smart Office] Ação não aplicada:", error);
     return;
   }
 
@@ -594,7 +629,26 @@ document.getElementById("timer-confirm").addEventListener("click", (event) => {
   document.getElementById("timer-modal").addEventListener(evt, resetIdleTimer);
 });
 
-renderTiles();
-renderScreensaverNotifications();
-updateClocks();
-setInterval(updateClocks, 1000);
+async function initializeSmartOffice() {
+
+  await DataProvider.refreshWeather();
+
+  await renderTiles();
+
+  renderScreensaverNotifications();
+
+  updateClocks();
+
+  setInterval(updateClocks, 1000);
+
+  // Atualiza clima a cada 15 minutos
+  setInterval(async () => {
+
+    await DataProvider.refreshWeather();
+
+    await renderTiles();
+
+  }, 15 * 60 * 1000);
+}
+
+initializeSmartOffice();

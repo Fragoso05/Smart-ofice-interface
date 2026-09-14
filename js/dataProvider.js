@@ -6,11 +6,147 @@ const DataProvider = (() => {
 
   const MODE = "live"; // "mock" | "live"
 
-  const NODE_RED_URL =
-    "https://violet-beaver-178312.hostingersite.com";
-
+ const NODE_RED_URL = "http://10.11.0.210:1880";
   const STORAGE_KEY = "smartOfficeState";
 
+  const AC_TEMP_MIN = 16;
+  const AC_TEMP_MAX = 30;
+
+// ============================================================
+// CLIMA - OPEN METEO
+// ============================================================
+
+// Praia, Cabo Verde
+const WEATHER_LAT = 14.93;
+const WEATHER_LON = -23.51;
+
+const WEATHER_URL =
+  `https://api.open-meteo.com/v1/forecast` +
+  `?latitude=${WEATHER_LAT}` +
+  `&longitude=${WEATHER_LON}` +
+  `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code` +
+  `&hourly=temperature_2m,weather_code` +
+  `&forecast_days=2` +
+  `&timezone=Atlantic%2FCape_Verde`;
+
+function weatherCodeToText(code) {
+  const codes = {
+    0: "Céu limpo",
+    1: "Pouco nublado",
+    2: "Parcialmente nublado",
+    3: "Nublado",
+
+    45: "Nevoeiro",
+    48: "Nevoeiro",
+
+    51: "Chuvisco",
+    53: "Chuvisco",
+    55: "Chuvisco forte",
+
+    61: "Chuva fraca",
+    63: "Chuva",
+    65: "Chuva forte",
+
+    71: "Neve fraca",
+    73: "Neve",
+    75: "Neve forte",
+
+    80: "Aguaceiros",
+    81: "Aguaceiros",
+    82: "Aguaceiros fortes",
+
+    95: "Trovoada",
+    96: "Trovoada",
+    99: "Trovoada forte"
+  };
+
+  return codes[code] || "Tempo variável";
+}
+
+async function refreshWeather() {
+  try {
+    console.log("[Smart Office] A atualizar clima...");
+
+    const response = await fetch(WEATHER_URL);
+
+    if (!response.ok) {
+      throw new Error(`Open-Meteo respondeu ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const current = data.current;
+
+    // Procura a primeira hora futura
+    let startIndex = data.hourly.time.findIndex(
+      (time) => time > current.time
+    );
+
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+
+    // Previsão de 2 em 2 horas
+    const forecastIndexes = [
+      startIndex,
+      startIndex + 2,
+      startIndex + 4
+    ];
+
+    const forecast = forecastIndexes
+      .filter((index) => index < data.hourly.time.length)
+      .map((index) => {
+        const date = new Date(data.hourly.time[index]);
+
+        return {
+          hour: `${String(date.getHours()).padStart(2, "0")}h`,
+          temp: Math.round(data.hourly.temperature_2m[index]),
+          condition: weatherCodeToText(
+            data.hourly.weather_code[index]
+          )
+        };
+      });
+
+    state.weather = {
+      condition: weatherCodeToText(current.weather_code),
+
+      temp: Math.round(
+        current.temperature_2m
+      ),
+
+      feelsLike: Math.round(
+        current.apparent_temperature
+      ),
+
+      humidity: Math.round(
+        current.relative_humidity_2m
+      ),
+
+      forecast,
+
+      updatedAt: new Date().toISOString()
+    };
+
+    persist();
+
+    console.log(
+      "[Smart Office] Clima atualizado:",
+      state.weather
+    );
+
+    return state.weather;
+
+  } catch (error) {
+
+    console.error(
+      "[Smart Office] Erro ao obter clima:",
+      error
+    );
+
+    // Mantém os últimos dados caso a internet esteja indisponível
+    return state.weather;
+  }
+}
 
   // ============================================================
   // ESTADO PADRÃO
@@ -26,8 +162,9 @@ const DataProvider = (() => {
 
     ac: {
       on: true,
-      temp: 23,
+      temp: 24,
       mode: "cool",
+      fan: "auto",
     },
 
     outlets: [
@@ -97,6 +234,11 @@ const DataProvider = (() => {
 
   let state = loadState();
 
+  // Migração: estados antigos guardados no localStorage ainda não têm "fan"
+  if (state.ac && typeof state.ac.fan === "undefined") {
+    state.ac.fan = "auto";
+  }
+
 
   // ============================================================
   // FUNÇÃO CENTRAL DE COMUNICAÇÃO COM NODE-RED
@@ -105,19 +247,32 @@ const DataProvider = (() => {
   async function nodeRedFetch(endpoint, options = {}) {
 
     const url = `${NODE_RED_URL}${endpoint}`;
+    const method = options.method || "GET";
 
     console.log(
-      `[Smart Office] ${options.method || "GET"} ${url}`
+      `[Smart Office] ${method} ${url}`,
+      options.body || ""
     );
 
-    const response = await fetch(url, {
-      ...options,
+    let response;
 
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
-    });
+    try {
+      response = await fetch(url, {
+        ...options,
+
+        headers: {
+          "Content-Type": "text/plain",
+          ...(options.headers || {}),
+        },
+      });
+    } catch (networkError) {
+      console.error(
+        `[Smart Office] Falha de rede ao contactar o Node-RED em ${url}. ` +
+        "Verifica se o Raspberry Pi está ligado, se o IP/porta estão corretos e se o Node-RED tem CORS configurado (ver NODE_RED_CORS_SETUP.md).",
+        networkError
+      );
+      throw networkError;
+    }
 
 
     if (!response.ok) {
@@ -128,10 +283,16 @@ const DataProvider = (() => {
         errorBody = await response.text();
       } catch (_) {}
 
-      throw new Error(
+      const error = new Error(
         `Node-RED respondeu ${response.status}: ${errorBody}`
       );
+
+      console.error(`[Smart Office] ${method} ${url} falhou:`, error.message);
+
+      throw error;
     }
+
+    console.log(`[Smart Office] ${method} ${url} OK (${response.status})`);
 
 
     // Alguns endpoints podem devolver 204 No Content
@@ -152,6 +313,18 @@ const DataProvider = (() => {
     return response.text();
   }
 
+
+  // Só confirma uma alteração do AC quando o Node-RED devolve success:true —
+  // caso contrário lança, e quem chamou não deve dar a ação como aplicada.
+  function assertAcConfirmed(result) {
+    if (!result || result.success !== true) {
+      const error = new Error(
+        (result && result.error) || "Node-RED não confirmou a alteração do AC"
+      );
+      console.error("[Smart Office] AC não confirmado pelo Node-RED:", error.message);
+      throw error;
+    }
+  }
 
   // ============================================================
   // ESTADO GERAL
@@ -248,29 +421,29 @@ const DataProvider = (() => {
   // LIGAR / DESLIGAR
   // ============================================================
 async function setAcOn(on) {
-
   const value = Boolean(on);
 
   if (MODE === "live") {
+    // Se o Node-RED falhar ou não confirmar, o estado local NÃO é alterado.
+    const result = await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          on: value,
+        }),
+      }
+    );
 
-    try {
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
+    assertAcConfirmed(result);
 
-          body: JSON.stringify({
-            on: value,
-          }),
-        }
-      );
-    } catch (error) {
-      console.warn("[Smart Office] Falha ao avisar o Node-RED (A.C. on/off):", error);
-    }
+    console.log(
+      "[Smart Office] AC on/off confirmado pelo Node-RED:",
+      result
+    );
   }
 
   state.ac.on = value;
-
   persist();
 }
 
@@ -288,22 +461,33 @@ async function setAcTemp(temp) {
     throw new Error("Temperatura inválida");
   }
 
+  if (value < AC_TEMP_MIN || value > AC_TEMP_MAX) {
+    throw new Error(
+      `Temperatura fora do intervalo permitido (${AC_TEMP_MIN}–${AC_TEMP_MAX}°C)`
+    );
+  }
+
   if (MODE === "live") {
+    // Se o Node-RED falhar ou não confirmar, o estado local NÃO é alterado.
+    const result = await nodeRedFetch(
+      "/api/ac",
+      {
+        method: "POST",
 
-    try {
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
+        body: JSON.stringify({
+          temp: value,
+          mode: state.ac.mode,
+          fan: state.ac.fan,
+        }),
+      }
+    );
 
-          body: JSON.stringify({
-            temp: value,
-          }),
-        }
-      );
-    } catch (error) {
-      console.warn("[Smart Office] Falha ao avisar o Node-RED (temperatura A.C.):", error);
-    }
+    assertAcConfirmed(result);
+
+    console.log(
+      "[Smart Office] AC temperatura confirmada pelo Node-RED:",
+      result
+    );
   }
 
   state.ac.temp = value;
@@ -316,29 +500,81 @@ async function setAcTemp(temp) {
   // SAMSUNG WINDFREE
   // MODO
   // ============================================================
-async function setAcMode(mode) {
 
-  if (MODE === "live") {
-
-    try {
-      await nodeRedFetch(
-        "/api/ac",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            mode,
-          }),
-        }
-      );
-    } catch (error) {
-      console.warn("[Smart Office] Falha ao avisar o Node-RED (modo A.C.):", error);
-    }
+  // Regra de interface isolada: no modo "dry" seleciona automaticamente a
+  // velocidade "auto" (fácil de alterar se o hardware passar a suportar mais
+  // velocidades nesse modo).
+  function resolveFanForMode(mode, currentFan) {
+    if (mode === "dry") return "auto";
+    return currentFan;
   }
 
-  state.ac.mode = mode;
+async function setAcMode(mode) {
+    const currentTemp = Number(state.ac.temp);
+    const fan = resolveFanForMode(mode, state.ac.fan);
 
-  persist();
+    if (MODE === "live") {
+        const result = await nodeRedFetch(
+            "/api/ac",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    mode,
+                    temp: currentTemp,
+                    fan
+                }),
+            }
+        );
+
+        assertAcConfirmed(result);
+
+        console.log(
+            "[Smart Office] AC modo confirmado pelo Node-RED:",
+            result
+        );
+    }
+
+    state.ac.mode = mode;
+    state.ac.fan = fan;
+    persist();
+}
+
+
+  // ============================================================
+  // SAMSUNG WINDFREE
+  // VELOCIDADE DA VENTOINHA
+  // ============================================================
+
+  const AC_FAN_SPEEDS = ["auto", "low", "medium", "high", "turbo"];
+
+async function setAcFan(fan) {
+    if (!AC_FAN_SPEEDS.includes(fan)) {
+        throw new Error("Velocidade da ventoinha inválida");
+    }
+
+    if (MODE === "live") {
+        const result = await nodeRedFetch(
+            "/api/ac",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    fan,
+                    mode: state.ac.mode,
+                    temp: state.ac.temp
+                }),
+            }
+        );
+
+        assertAcConfirmed(result);
+
+        console.log(
+            "[Smart Office] AC ventoinha confirmada pelo Node-RED:",
+            result
+        );
+    }
+
+    state.ac.fan = fan;
+    persist();
 }
 
 
@@ -412,25 +648,17 @@ async function setAcMode(mode) {
   // ============================================================
 
   return {
-
-    MODE,
-
-    getState,
-
-    setLightOn,
-
-    setOutletOn,
-
-    setAcOn,
-
-    setAcTemp,
-
-    setAcMode,
-
-    addTimer,
-
-    removeTimer,
-
-  };
+  MODE,
+  getState,
+  refreshWeather,
+  setLightOn,
+  setOutletOn,
+  setAcOn,
+  setAcTemp,
+  setAcMode,
+  setAcFan,
+  addTimer,
+  removeTimer,
+};
 
 })();
