@@ -46,7 +46,20 @@
     <button id="detail-back" class="icon-btn modal-back" aria-label="Voltar">
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <div id="detail-body" class="modal-body"></div>
+
+    <div class="scroll-layout">
+      <div id="detail-body" class="modal-body scroll-layout__content"></div>
+
+      <!-- Coluna isolada com as setas de rolar — mostrada só na página do A.C. -->
+      <div class="scroll-layout__scroll hidden" id="detail-scroll-col">
+        <button id="detail-scroll-up" class="icon-btn scroll-btn" aria-label="Rolar para cima">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+        </button>
+        <button id="detail-scroll-down" class="icon-btn scroll-btn" aria-label="Rolar para baixo">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal do Timer — fullscreen, sem header, com botões de scroll -->
@@ -55,8 +68,8 @@
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
 
-    <div class="timer-layout">
-      <div id="timer-body" class="modal-body timer-layout__content">
+    <div class="scroll-layout">
+      <div id="timer-body" class="modal-body scroll-layout__content">
         <div id="timer-list" class="timer-list"></div>
 
         <div class="timer-form">
@@ -79,7 +92,7 @@
       </div>
 
       <!-- Coluna isolada: as setas de rolar nunca sobrepõem os botões do conteúdo -->
-      <div class="timer-layout__scroll">
+      <div class="scroll-layout__scroll">
         <button id="timer-scroll-up" class="icon-btn scroll-btn" aria-label="Rolar para cima">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
         </button>

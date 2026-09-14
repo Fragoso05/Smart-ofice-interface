@@ -258,6 +258,9 @@ async function openDetailModal(type) {
     resetIdleTimer();
   }
 
+  // Setas de rolar isoladas: só fazem sentido na página do A.C. por enquanto
+  document.getElementById("detail-scroll-col").classList.toggle("hidden", type !== "ac");
+
   document.getElementById("detail-modal").classList.remove("hidden");
   await renderDetailBody(type);
 }
@@ -556,8 +559,8 @@ async function handleTimerListClick(event) {
   await renderTiles();
 }
 
-function scrollTimerBody(direction) {
-  document.getElementById("timer-body").scrollBy({ top: direction * 180, behavior: "smooth" });
+function scrollBody(elementId, direction) {
+  document.getElementById(elementId).scrollBy({ top: direction * 180, behavior: "smooth" });
 }
 
 /* ---------- Wiring ---------- */
@@ -568,14 +571,16 @@ document.getElementById("tile-grid").addEventListener("click", handleTileClick);
 
 document.getElementById("detail-back").addEventListener("click", closeDetailModal);
 document.getElementById("detail-body").addEventListener("click", handleDetailBodyClick);
+document.getElementById("detail-scroll-up").addEventListener("click", () => scrollBody("detail-body", -1));
+document.getElementById("detail-scroll-down").addEventListener("click", () => scrollBody("detail-body", 1));
 
 document.getElementById("timer-back").addEventListener("click", closeTimerModal);
 document.getElementById("timer-device-buttons").addEventListener("click", handleTimerDeviceClick);
 document.getElementById("timer-action-buttons").addEventListener("click", handleTimerActionClick);
 document.getElementById("timer-add").addEventListener("click", handleTimerAdd);
 document.getElementById("timer-list").addEventListener("click", handleTimerListClick);
-document.getElementById("timer-scroll-up").addEventListener("click", () => scrollTimerBody(-1));
-document.getElementById("timer-scroll-down").addEventListener("click", () => scrollTimerBody(1));
+document.getElementById("timer-scroll-up").addEventListener("click", () => scrollBody("timer-body", -1));
+document.getElementById("timer-scroll-down").addEventListener("click", () => scrollBody("timer-body", 1));
 
 document.getElementById("timer-confirm-ok").addEventListener("click", hideTimerConfirm);
 document.getElementById("timer-confirm").addEventListener("click", (event) => {

@@ -383,21 +383,21 @@ html, body {
   justify-content: center;
 }
 
-/* Layout do Timer em duas colunas: conteúdo rolável + coluna isolada para as setas
-   de rolar. Antes as setas ficavam fixas por cima do conteúdo e podiam bloquear
-   toques no "Adicionar" e no "remover" — agora cada uma tem seu próprio espaço. */
-.timer-layout {
+/* Layout em duas colunas (Timer e A.C.): conteúdo rolável + coluna isolada para as
+   setas de rolar. Antes as setas ficavam fixas por cima do conteúdo e podiam
+   bloquear toques nos botões — agora cada uma tem seu próprio espaço. */
+.scroll-layout {
   flex: 1;
   display: flex;
   min-height: 0;
 }
 
-.timer-layout__content {
+.scroll-layout__content {
   flex: 1;
   min-width: 0;
 }
 
-.timer-layout__scroll {
+.scroll-layout__scroll {
   flex-shrink: 0;
   width: 108px;
   display: flex;
