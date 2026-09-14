@@ -8,6 +8,7 @@ const ICONS = {
 };
 
 const AC_MODES = { cool: "Frio", fan: "Ventilar", dry: "Desumidificar" };
+const AC_FAN_SPEEDS = { auto: "Auto", low: "Baixo", medium: "Médio", high: "Alto", turbo: "Turbo" };
 const IDLE_TIMEOUT_MS = 15 * 1000;
 
 function pad(n) {
@@ -354,6 +355,15 @@ async function renderDetailBody(type) {
           )
           .join("")}
       </div>
+      <div class="ac-section-label">Velocidade da ventoinha</div>
+      <div class="mode-chips mode-chips--fan">
+        ${Object.entries(AC_FAN_SPEEDS)
+          .map(
+            ([value, label]) => `
+          <div class="mode-chip ${state.ac.fan === value ? "is-active" : ""}" data-kind="ac-fan" data-value="${value}">${label}</div>`
+          )
+          .join("")}
+      </div>
     `;
     return;
   }
@@ -410,6 +420,8 @@ async function handleDetailBodyClick(event) {
       await DataProvider.setAcTemp(Math.min(30, state.ac.temp + 1));
     } else if (kind === "ac-mode") {
       await DataProvider.setAcMode(target.dataset.value);
+    } else if (kind === "ac-fan") {
+      await DataProvider.setAcFan(target.dataset.value);
     } else {
       return;
     }

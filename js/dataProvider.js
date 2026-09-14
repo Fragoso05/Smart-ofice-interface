@@ -162,8 +162,9 @@ async function refreshWeather() {
 
     ac: {
       on: true,
-      temp: 23,
+      temp: 24,
       mode: "cool",
+      fan: "auto",
     },
 
     outlets: [
@@ -232,6 +233,11 @@ async function refreshWeather() {
 
 
   let state = loadState();
+
+  // Migração: estados antigos guardados no localStorage ainda não têm "fan"
+  if (state.ac && typeof state.ac.fan === "undefined") {
+    state.ac.fan = "auto";
+  }
 
 
   // ============================================================
@@ -307,6 +313,18 @@ async function refreshWeather() {
     return response.text();
   }
 
+
+  // Só confirma uma alteração do AC quando o Node-RED devolve success:true —
+  // caso contrário lança, e quem chamou não deve dar a ação como aplicada.
+  function assertAcConfirmed(result) {
+    if (!result || result.success !== true) {
+      const error = new Error(
+        (result && result.error) || "Node-RED não confirmou a alteração do AC"
+      );
+      console.error("[Smart Office] AC não confirmado pelo Node-RED:", error.message);
+      throw error;
+    }
+  }
 
   // ============================================================
   // ESTADO GERAL
@@ -406,7 +424,7 @@ async function setAcOn(on) {
   const value = Boolean(on);
 
   if (MODE === "live") {
-    // Se o Node-RED falhar, nodeRedFetch lança e o estado local NÃO é alterado.
+    // Se o Node-RED falhar ou não confirmar, o estado local NÃO é alterado.
     const result = await nodeRedFetch(
       "/api/ac",
       {
@@ -416,6 +434,8 @@ async function setAcOn(on) {
         }),
       }
     );
+
+    assertAcConfirmed(result);
 
     console.log(
       "[Smart Office] AC on/off confirmado pelo Node-RED:",
@@ -448,7 +468,7 @@ async function setAcTemp(temp) {
   }
 
   if (MODE === "live") {
-    // Se o Node-RED falhar, nodeRedFetch lança e o estado local NÃO é alterado.
+    // Se o Node-RED falhar ou não confirmar, o estado local NÃO é alterado.
     const result = await nodeRedFetch(
       "/api/ac",
       {
@@ -456,9 +476,13 @@ async function setAcTemp(temp) {
 
         body: JSON.stringify({
           temp: value,
+          mode: state.ac.mode,
+          fan: state.ac.fan,
         }),
       }
     );
+
+    assertAcConfirmed(result);
 
     console.log(
       "[Smart Office] AC temperatura confirmada pelo Node-RED:",
@@ -476,8 +500,18 @@ async function setAcTemp(temp) {
   // SAMSUNG WINDFREE
   // MODO
   // ============================================================
+
+  // Regra de interface isolada: no modo "dry" seleciona automaticamente a
+  // velocidade "auto" (fácil de alterar se o hardware passar a suportar mais
+  // velocidades nesse modo).
+  function resolveFanForMode(mode, currentFan) {
+    if (mode === "dry") return "auto";
+    return currentFan;
+  }
+
 async function setAcMode(mode) {
     const currentTemp = Number(state.ac.temp);
+    const fan = resolveFanForMode(mode, state.ac.fan);
 
     if (MODE === "live") {
         const result = await nodeRedFetch(
@@ -486,10 +520,13 @@ async function setAcMode(mode) {
                 method: "POST",
                 body: JSON.stringify({
                     mode,
-                    temp: currentTemp
+                    temp: currentTemp,
+                    fan
                 }),
             }
         );
+
+        assertAcConfirmed(result);
 
         console.log(
             "[Smart Office] AC modo confirmado pelo Node-RED:",
@@ -498,6 +535,45 @@ async function setAcMode(mode) {
     }
 
     state.ac.mode = mode;
+    state.ac.fan = fan;
+    persist();
+}
+
+
+  // ============================================================
+  // SAMSUNG WINDFREE
+  // VELOCIDADE DA VENTOINHA
+  // ============================================================
+
+  const AC_FAN_SPEEDS = ["auto", "low", "medium", "high", "turbo"];
+
+async function setAcFan(fan) {
+    if (!AC_FAN_SPEEDS.includes(fan)) {
+        throw new Error("Velocidade da ventoinha inválida");
+    }
+
+    if (MODE === "live") {
+        const result = await nodeRedFetch(
+            "/api/ac",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    fan,
+                    mode: state.ac.mode,
+                    temp: state.ac.temp
+                }),
+            }
+        );
+
+        assertAcConfirmed(result);
+
+        console.log(
+            "[Smart Office] AC ventoinha confirmada pelo Node-RED:",
+            result
+        );
+    }
+
+    state.ac.fan = fan;
     persist();
 }
 
@@ -580,6 +656,7 @@ async function setAcMode(mode) {
   setAcOn,
   setAcTemp,
   setAcMode,
+  setAcFan,
   addTimer,
   removeTimer,
 };
