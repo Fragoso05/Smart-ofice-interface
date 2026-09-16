@@ -155,9 +155,9 @@ async function refreshWeather() {
   const defaultState = {
 
     lights: [
-      { id: "light-1", label: "Luz principal", on: true },
-      { id: "light-2", label: "Luz de mesa", on: false },
-      { id: "light-3", label: "Luz de teto", on: true },
+      { id: "light-1", name: "Luz principal", number: 1, connected: true, on: true },
+      { id: "light-2", name: "Luz de mesa", number: 2, connected: true, on: false },
+      { id: "light-3", name: "Luz de teto", number: 3, connected: true, on: true },
     ],
 
     ac: {
@@ -168,8 +168,8 @@ async function refreshWeather() {
     },
 
     outlets: [
-      { id: "outlet-1", label: "Tomada 1", on: false },
-      { id: "outlet-2", label: "Tomada 2", on: false },
+      { id: "outlet-1", name: "Tomada 1", number: 1, connected: true, on: false },
+      { id: "outlet-2", name: "Tomada 2", number: 2, connected: true, on: false },
     ],
 
     weather: {
@@ -238,6 +238,59 @@ async function refreshWeather() {
   if (state.ac && typeof state.ac.fan === "undefined") {
     state.ac.fan = "auto";
   }
+
+  // ============================================================
+  // TOMADAS / LÂMPADAS — HELPERS DE DISPOSITIVO
+  // ============================================================
+
+  const DEVICE_ENDPOINTS = {
+    outlet: "/api/outlets",
+    light: "/api/lights",
+  };
+
+  function getDefaultDeviceName(type, number) {
+    return type === "outlet" ? `Tomada ${number}` : `Lâmpada ${number}`;
+  }
+
+  function getDeviceList(type) {
+    if (type === "outlet") return state.outlets;
+    if (type === "light") return state.lights;
+    throw new Error(`Tipo de dispositivo desconhecido: ${type}`);
+  }
+
+  function getDeviceByType(type, id) {
+    return getDeviceList(type).find((device) => device.id === id);
+  }
+
+  function isDeviceConnected(type, id) {
+    const device = getDeviceByType(type, id);
+    return Boolean(device && device.connected);
+  }
+
+  // Migração: estados antigos guardados no localStorage ainda não têm
+  // "number"/"connected", e usavam "label" em vez de "name".
+  function migrateDeviceList(list, type) {
+    if (!Array.isArray(list)) return;
+
+    list.forEach((device, index) => {
+      if (typeof device.number !== "number") {
+        const match = /(\d+)$/.exec(String(device.id));
+        device.number = match ? Number(match[1]) : index + 1;
+      }
+
+      if (!device.name) {
+        device.name = device.label || getDefaultDeviceName(type, device.number);
+      }
+      delete device.label;
+
+      if (typeof device.connected !== "boolean") {
+        device.connected = true;
+      }
+    });
+  }
+
+  migrateDeviceList(state.lights, "light");
+  migrateDeviceList(state.outlets, "outlet");
 
 
   // ============================================================
@@ -337,82 +390,134 @@ async function refreshWeather() {
 }
 
   // ============================================================
-  // LUZES
+  // LUZES / TOMADAS — LIGAR / DESLIGAR
   // ============================================================
 
-  async function setLightOn(id, on) {
+  // Só confirma a alteração quando o Node-RED devolve success:true — se a API
+  // falhar ou o dispositivo estiver desconectado, o estado local não muda.
+  async function setDeviceOn(type, id, on) {
+    const device = getDeviceByType(type, id);
+
+    if (!device) return;
+
+    if (!device.connected) {
+      console.warn(`[Smart Office] Dispositivo desconectado (${type}):`, id);
+      return;
+    }
+
+    const desired = Boolean(on);
 
     if (MODE === "live") {
-
       try {
-        await nodeRedFetch(
-          `/api/lights/${encodeURIComponent(id)}`,
+        const result = await nodeRedFetch(
+          `${DEVICE_ENDPOINTS[type]}/${encodeURIComponent(id)}`,
           {
             method: "POST",
 
             body: JSON.stringify({
-              on: Boolean(on),
+              on: desired,
             }),
           }
         );
+
+        if (!result || result.success !== true) {
+          throw new Error("Node-RED não confirmou o comando");
+        }
       } catch (error) {
-        console.warn("[Smart Office] Falha ao avisar o Node-RED (luz):", error);
+        console.warn(
+          `[Smart Office] Falha ao controlar ${type === "outlet" ? "tomada" : "luz"}:`,
+          error
+        );
+        return;
       }
     }
 
-
-    const light =
-      state.lights.find(
-        (light) => light.id === id
-      );
-
-
-    if (light) {
-      light.on = Boolean(on);
-    }
-
+    device.on = desired;
 
     persist();
   }
 
-
-  // ============================================================
-  // TOMADAS
-  // ============================================================
+  async function setLightOn(id, on) {
+    return setDeviceOn("light", id, on);
+  }
 
   async function setOutletOn(id, on) {
+    return setDeviceOn("outlet", id, on);
+  }
 
-    if (MODE === "live") {
+  // ============================================================
+  // LUZES / TOMADAS — RENOMEAR
+  // ============================================================
 
-      try {
-        await nodeRedFetch(
-          `/api/outlets/${encodeURIComponent(id)}`,
-          {
-            method: "POST",
+  const DEVICE_NAME_MAX_LENGTH = 40;
 
-            body: JSON.stringify({
-              on: Boolean(on),
-            }),
-          }
-        );
-      } catch (error) {
-        console.warn("[Smart Office] Falha ao avisar o Node-RED (tomada):", error);
-      }
+  async function renameDevice(type, id, name) {
+    const device = getDeviceByType(type, id);
+
+    if (!device) {
+      throw new Error("Dispositivo não encontrado");
     }
 
+    const trimmed = String(name || "").trim().slice(0, DEVICE_NAME_MAX_LENGTH);
 
-    const outlet =
-      state.outlets.find(
-        (outlet) => outlet.id === id
-      );
-
-
-    if (outlet) {
-      outlet.on = Boolean(on);
+    if (!trimmed) {
+      throw new Error("Nome inválido");
     }
 
+    device.name = trimmed;
 
     persist();
+
+    return device;
+  }
+
+  // ============================================================
+  // LUZES / TOMADAS — ESTADO DE CONEXÃO
+  // ============================================================
+
+  // Atualiza "connected"/"on" a partir do Node-RED, quando o endpoint existir.
+  // Sem efeito em modo mock, e falha silenciosamente (console.warn) se o
+  // endpoint ainda não estiver disponível no backend.
+  async function refreshDeviceConnectivity(type) {
+    if (MODE !== "live") return getDeviceList(type);
+
+    try {
+      const result = await nodeRedFetch(DEVICE_ENDPOINTS[type]);
+      const key = type === "outlet" ? "outlets" : "lights";
+      const incomingList = result && Array.isArray(result[key]) ? result[key] : null;
+
+      if (incomingList) {
+        incomingList.forEach((incoming) => {
+          const device = getDeviceByType(type, incoming.id);
+          if (!device) return;
+
+          if (typeof incoming.connected === "boolean") {
+            device.connected = incoming.connected;
+          }
+
+          if (typeof incoming.on === "boolean") {
+            device.on = incoming.on;
+          }
+        });
+
+        persist();
+      }
+    } catch (error) {
+      console.warn(
+        `[Smart Office] Falha ao atualizar estado de conexão (${type}):`,
+        error
+      );
+    }
+
+    return getDeviceList(type);
+  }
+
+  async function refreshOutlets() {
+    return refreshDeviceConnectivity("outlet");
+  }
+
+  async function refreshLights() {
+    return refreshDeviceConnectivity("light");
   }
 
 
@@ -653,6 +758,10 @@ async function setAcFan(fan) {
   refreshWeather,
   setLightOn,
   setOutletOn,
+  renameDevice,
+  isDeviceConnected,
+  refreshOutlets,
+  refreshLights,
   setAcOn,
   setAcTemp,
   setAcMode,

@@ -5,7 +5,17 @@ const ICONS = {
   weather: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4-1.8A4 4 0 0 0 6.5 16"/></svg>`,
   outlet: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="7"/><path d="M9.5 10v2M14.5 10v2"/></svg>`,
   timer: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>`,
+  pencil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
 };
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 const AC_MODES = { cool: "Frio", fan: "Ventilar", dry: "Desumidificar" };
 const AC_FAN_SPEEDS = { auto: "Auto", low: "Baixo", medium: "Médio", high: "Alto", turbo: "Turbo" };
@@ -80,7 +90,7 @@ async function renderScreensaverNotifications() {
   // Lista completa, revelada ao expandir
   document.getElementById("ss-notif-list").innerHTML = ordered
     .map((t) => {
-      const label = labels[t.device] || t.device;
+      const label = escapeHtml(labels[t.device] || t.device);
       const action = t.action === "on" ? "Ligar" : "Desligar";
       return `
         <div class="ss-notif">
@@ -253,6 +263,18 @@ async function handleTileClick(event) {
     // Abre detalhes
     await openDetailModal("weather");
 
+  } else if (modal === "lights" || modal === "outlets") {
+
+    // Atualiza o estado de conexão antes de mostrar os controlos
+    if (modal === "lights") {
+      await DataProvider.refreshLights();
+    } else {
+      await DataProvider.refreshOutlets();
+    }
+
+    await renderTiles();
+    await openDetailModal(modal);
+
   } else {
 
     openDetailModal(modal);
@@ -287,6 +309,28 @@ function closeDetailModal() {
   resetIdleTimer();
 }
 
+// Uma linha de tomada/lâmpada: liga/desliga quando conectada, mostra
+// "Offline" e esconde o controlo quando não está.
+function renderDeviceRow(type, device) {
+  const online = device.connected !== false;
+  const onLabel = type === "outlet" ? "Ligada" : "Ligado";
+  const offLabel = type === "outlet" ? "Desligada" : "Desligado";
+  const stateText = online ? (device.on ? onLabel : offLabel) : "Offline";
+  const kindAttr = online ? ` data-kind="${type}"` : "";
+
+  return `
+    <div class="subtoggle ${online && device.on ? "is-on" : ""} ${online ? "" : "is-offline"}"${kindAttr} data-id="${device.id}">
+      <span class="subtoggle__label">
+        <span class="subtoggle__dot"></span>
+        <span class="subtoggle__name">${escapeHtml(device.name)}</span>
+      </span>
+      <span class="subtoggle__right">
+        <span class="subtoggle__state ${online ? "" : "subtoggle__state--offline"}">${stateText}</span>
+        <button class="subtoggle__edit" data-edit="${type}" data-id="${device.id}" aria-label="Editar nome">${ICONS.pencil}</button>
+      </span>
+    </div>`;
+}
+
 async function renderDetailBody(type) {
   const state = await DataProvider.getState();
   const body = document.getElementById("detail-body");
@@ -305,15 +349,7 @@ async function renderDetailBody(type) {
   if (type === "lights") {
     body.innerHTML = `
       <div class="sublist" id="lights-list">
-        ${state.lights
-          .map(
-            (l) => `
-          <div class="subtoggle ${l.on ? "is-on" : ""}" data-kind="light" data-id="${l.id}">
-            <span class="subtoggle__label"><span class="subtoggle__dot"></span>${l.label}</span>
-            <span class="subtoggle__state">${l.on ? "Ligado" : "Desligado"}</span>
-          </div>`
-          )
-          .join("")}
+        ${state.lights.map((l) => renderDeviceRow("light", l)).join("")}
       </div>
     `;
     return;
@@ -322,15 +358,7 @@ async function renderDetailBody(type) {
   if (type === "outlets") {
     body.innerHTML = `
       <div class="sublist" id="outlets-list">
-        ${state.outlets
-          .map(
-            (o) => `
-          <div class="subtoggle ${o.on ? "is-on" : ""}" data-kind="outlet" data-id="${o.id}">
-            <span class="subtoggle__label"><span class="subtoggle__dot"></span>${o.label}</span>
-            <span class="subtoggle__state">${o.on ? "Ligada" : "Desligada"}</span>
-          </div>`
-          )
-          .join("")}
+        ${state.outlets.map((o) => renderDeviceRow("outlet", o)).join("")}
       </div>
     `;
     return;
@@ -397,6 +425,13 @@ async function renderDetailBody(type) {
 }
 
 async function handleDetailBodyClick(event) {
+  const editBtn = event.target.closest("[data-edit]");
+  if (editBtn) {
+    event.stopPropagation();
+    openDeviceRenameModal(editBtn.dataset.edit, editBtn.dataset.id);
+    return;
+  }
+
   const target = event.target.closest("[data-kind]");
   if (!target) return;
 
@@ -435,20 +470,64 @@ async function handleDetailBodyClick(event) {
   await renderTiles();
 }
 
+/* ---------- Modal para renomear tomada/lâmpada ---------- */
+
+let renameContext = null; // { type, id }
+
+async function openDeviceRenameModal(type, id) {
+  const state = await DataProvider.getState();
+  const list = type === "outlet" ? state.outlets : state.lights;
+  const device = list.find((d) => d.id === id);
+  if (!device) return;
+
+  renameContext = { type, id };
+
+  const input = document.getElementById("rename-input");
+  input.value = device.name;
+
+  document.getElementById("rename-popup").classList.remove("hidden");
+  input.focus();
+  input.select();
+}
+
+function closeDeviceRenameModal() {
+  document.getElementById("rename-popup").classList.add("hidden");
+  renameContext = null;
+}
+
+async function saveDeviceName(type, id, newName) {
+  try {
+    await DataProvider.renameDevice(type, id, newName);
+  } catch (error) {
+    console.warn("[Smart Office] Não foi possível renomear o dispositivo:", error);
+    return;
+  }
+
+  closeDeviceRenameModal();
+  await renderDetailBody(currentDetailType);
+  await renderTiles();
+}
+
+function handleRenameSave() {
+  if (!renameContext) return;
+  const value = document.getElementById("rename-input").value;
+  saveDeviceName(renameContext.type, renameContext.id, value);
+}
+
 /* ---------- Modal do Timer ---------- */
 
 const DEVICE_LABEL_MAP = (state) => {
   const map = { ac: "A.C." };
-  state.lights.forEach((l) => (map[l.id] = l.label));
-  state.outlets.forEach((o) => (map[o.id] = o.label));
+  state.lights.forEach((l) => (map[l.id] = l.name));
+  state.outlets.forEach((o) => (map[o.id] = o.name));
   return map;
 };
 
 function deviceOptions(state) {
   return [
-    ...state.lights.map((l) => ({ id: l.id, label: l.label })),
+    ...state.lights.map((l) => ({ id: l.id, label: l.name })),
     { id: "ac", label: "A.C." },
-    ...state.outlets.map((o) => ({ id: o.id, label: o.label })),
+    ...state.outlets.map((o) => ({ id: o.id, label: o.name })),
   ];
 }
 
@@ -480,7 +559,7 @@ async function openTimerModal() {
   document.getElementById("timer-device-buttons").innerHTML = devices
     .map(
       (d) => `
-      <div class="mode-chip ${d.id === timerSelectedDevice ? "is-active" : ""}" data-device="${d.id}">${d.label}</div>`
+      <div class="mode-chip ${d.id === timerSelectedDevice ? "is-active" : ""}" data-device="${d.id}">${escapeHtml(d.label)}</div>`
     )
     .join("");
 
@@ -530,7 +609,7 @@ async function renderTimerList() {
       .map(
         (t) => `
         <div class="timer-item" data-id="${t.id}">
-          <span>${labels[t.device] || t.device} — ${t.action === "on" ? "Ligar" : "Desligar"} às ${t.time}</span>
+          <span>${escapeHtml(labels[t.device] || t.device)} — ${t.action === "on" ? "Ligar" : "Desligar"} às ${t.time}</span>
           <button class="timer-item__remove" data-id="${t.id}" aria-label="Remover">✕</button>
         </div>`
       )
@@ -615,6 +694,15 @@ document.getElementById("timer-scroll-down").addEventListener("click", () => scr
 document.getElementById("timer-confirm-ok").addEventListener("click", hideTimerConfirm);
 document.getElementById("timer-confirm").addEventListener("click", (event) => {
   if (event.target.id === "timer-confirm") hideTimerConfirm();
+});
+
+document.getElementById("rename-cancel").addEventListener("click", closeDeviceRenameModal);
+document.getElementById("rename-save").addEventListener("click", handleRenameSave);
+document.getElementById("rename-popup").addEventListener("click", (event) => {
+  if (event.target.id === "rename-popup") closeDeviceRenameModal();
+});
+document.getElementById("rename-input").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") handleRenameSave();
 });
 
 // Qualquer toque/clique no painel ou nos modais reinicia o contador de inatividade

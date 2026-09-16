@@ -440,11 +440,29 @@ html, body {
   background: var(--surface-hover);
 }
 
+/* Dispositivo desconectado: sem interação, sem feedback de toque */
+.subtoggle.is-offline {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.subtoggle.is-offline:active {
+  background: var(--surface);
+}
+
 .subtoggle__label {
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 1.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.subtoggle__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .subtoggle__dot {
@@ -460,10 +478,47 @@ html, body {
   box-shadow: 0 0 8px var(--on);
 }
 
+.subtoggle__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
 .subtoggle__state {
   font-size: 1rem;
   font-weight: 600;
   color: var(--off);
+}
+
+.subtoggle__state--offline {
+  color: var(--text-dim);
+}
+
+/* Botão de editar nome — canto direito do card, não deve acionar o toggle */
+.subtoggle__edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text-dim);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.subtoggle__edit svg {
+  width: 18px;
+  height: 18px;
+}
+
+.subtoggle__edit:active {
+  background: var(--border);
+  color: var(--text);
 }
 
 .subtoggle.is-on .subtoggle__state {
@@ -823,4 +878,49 @@ html, body {
   font-weight: 700;
   font-size: 1.05rem;
   cursor: pointer;
+}
+
+/* Popup para renomear tomada/lâmpada */
+.rename-input {
+  width: 100%;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 14px 16px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.rename-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.rename-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.rename-btn {
+  flex: 1;
+  min-height: 56px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.rename-btn--ghost {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.rename-btn--primary {
+  background: var(--accent);
+  border: none;
+  color: #061018;
 }

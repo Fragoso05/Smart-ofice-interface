@@ -47,6 +47,18 @@
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <div id="detail-body" class="modal-body"></div>
+
+    <!-- Popup para renomear tomada/lâmpada -->
+    <div id="rename-popup" class="popup hidden">
+      <div class="popup__card">
+        <div class="popup__title">Editar nome</div>
+        <input id="rename-input" class="rename-input" type="text" maxlength="40" placeholder="Nome do dispositivo">
+        <div class="rename-actions">
+          <button id="rename-cancel" class="rename-btn rename-btn--ghost">Cancelar</button>
+          <button id="rename-save" class="rename-btn rename-btn--primary">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Modal do Timer — fullscreen, sem header, com botões de scroll -->
