@@ -442,8 +442,62 @@ async function refreshWeather() {
   }
 
   async function setOutletOn(id, on) {
-    return setDeviceOn("outlet", id, on);
+
+  const outlet = state.outlets.find(
+    (outlet) => outlet.id === id
+  );
+
+  if (!outlet) {
+    throw new Error(
+      `Tomada não encontrada: ${id}`
+    );
   }
+
+  const desired = Boolean(on);
+
+  // IMPORTANTE:
+  // não alterar outlet.on antes da confirmação
+
+  if (MODE === "live") {
+
+    const result = await nodeRedFetch(
+      "/api/outlets",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          id: id,
+          on: desired
+        })
+      }
+    );
+
+    if (
+      !result ||
+      result.success !== true
+    ) {
+      throw new Error(
+        result?.error ||
+        "Node-RED não confirmou o comando da tomada"
+      );
+    }
+
+    // Só agora alterar o estado visual
+    outlet.on = Boolean(result.on);
+    outlet.connected = true;
+
+    persist();
+
+    return outlet;
+  }
+
+  // Apenas em modo mock
+  outlet.on = desired;
+
+  persist();
+
+  return outlet;
+}
 
   // ============================================================
   // LUZES / TOMADAS — RENOMEAR
@@ -666,8 +720,7 @@ async function setAcFan(fan) {
                     fan,
                     mode: state.ac.mode,
                     temp: state.ac.temp
-                }),
-            }
+                }),            }
         );
 
         assertAcConfirmed(result);

@@ -263,18 +263,16 @@ async function handleTileClick(event) {
     // Abre detalhes
     await openDetailModal("weather");
 
-  } else if (modal === "lights" || modal === "outlets") {
+} else if (modal === "lights") {
 
-    // Atualiza o estado de conexão antes de mostrar os controlos
-    if (modal === "lights") {
-      await DataProvider.refreshLights();
-    } else {
-      await DataProvider.refreshOutlets();
-    }
-
+    await DataProvider.refreshLights();
     await renderTiles();
-    await openDetailModal(modal);
+    await openDetailModal("lights");
 
+} else if (modal === "outlets") {
+
+    
+    await openDetailModal("outlets");
   } else {
 
     openDetailModal(modal);
