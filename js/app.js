@@ -5,6 +5,7 @@ const ICONS = {
   weather: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4-1.8A4 4 0 0 0 6.5 16"/></svg>`,
   outlet: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="7"/><path d="M9.5 10v2M14.5 10v2"/></svg>`,
   timer: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>`,
+  admin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.5 10.5V9a1.5 1.5 0 0 1 3 0v1.5"/></svg>`,
   pencil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
 };
 
@@ -131,6 +132,8 @@ function showScreensaver() {
   document.getElementById("detail-modal").classList.add("hidden");
   document.getElementById("timer-modal").classList.add("hidden");
   stopIdleTimer();
+  // A sessão administrativa nunca sobrevive ao screensaver do kiosk
+  AdminApp.lock("screensaver");
   setNotifExpanded(false);
   renderScreensaverNotifications();
 }
@@ -171,6 +174,26 @@ function resetIdleTimer() {
 function stopIdleTimer() {
   clearTimeout(idleTimer);
   idleTimer = null;
+}
+
+/* ---------- Área administrativa ---------- */
+
+// Enquanto a área admin está aberta, o screensaver do kiosk fica em pausa:
+// o bloqueio é feito pelo temporizador de inatividade próprio do admin.
+function openAdminArea() {
+  lastScreen = { type: "panel" }; // ao acordar o screensaver nunca se volta ao admin
+  idlePaused = true;
+  stopIdleTimer();
+  AdminApp.open({ onExit: closeAdminArea });
+}
+
+function closeAdminArea(reason) {
+  idlePaused = false;
+  if (reason === "inactivity") {
+    showScreensaver();
+  } else {
+    resetIdleTimer();
+  }
 }
 
 /* ---------- Tiles ---------- */
@@ -236,6 +259,12 @@ async function renderTiles() {
       <span class="tile__label">Timer</span>
       <span class="tile__value">${state.timers.length} agendado(s)</span>
     </div>
+
+    <div class="tile" data-modal="admin">
+      <span class="tile__icon">${ICONS.admin}</span>
+      <span class="tile__label">Admin / Acessos</span>
+      <span class="tile__value">Acesso restrito</span>
+    </div>
   `;
 
   updateClocks();
@@ -251,6 +280,10 @@ async function handleTileClick(event) {
   if (modal === "timer") {
 
     openTimerModal();
+
+  } else if (modal === "admin") {
+
+    openAdminArea();
 
   } else if (modal === "weather") {
 

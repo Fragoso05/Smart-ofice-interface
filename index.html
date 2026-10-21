@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Smart Office</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
 
@@ -118,7 +119,54 @@
     </div>
   </div>
 
+  <!-- Área administrativa (controlo de acessos RFID) — vistas renderizadas via JS -->
+  <section id="admin" class="screen admin hidden" aria-label="Administração">
+    <div id="admin-login" class="adm-login">
+      <form id="admin-login-form" class="adm-login__card" autocomplete="off" novalidate>
+        <div class="adm-brand"><span class="adm-brand__icon" data-icon="shield"></span><span>Smart Office</span><span class="adm-badge">Admin</span></div>
+        <h1 class="adm-login__title">Acesso administrativo</h1>
+        <label class="adm-field">
+          <span>Utilizador</span>
+          <input id="admin-username" class="adm-input" name="username" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="64">
+        </label>
+        <label class="adm-field">
+          <span>Palavra-passe</span>
+          <input id="admin-password" class="adm-input" name="password" type="password" autocomplete="current-password" maxlength="256">
+        </label>
+        <div id="admin-login-msg" class="adm-login__msg hidden" role="alert"></div>
+        <div class="adm-login__actions">
+          <button type="button" id="admin-login-back" class="adm-btn adm-btn--ghost">Voltar</button>
+          <button type="submit" id="admin-login-submit" class="adm-btn adm-btn--primary">Entrar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="admin-shell" class="adm-shell hidden">
+      <aside class="adm-nav">
+        <div class="adm-brand adm-nav__brand"><span class="adm-brand__icon" data-icon="shield"></span><span>Smart Office</span><span class="adm-badge">Admin</span></div>
+        <nav id="admin-nav" class="adm-nav__list" aria-label="Menu administrativo"></nav>
+        <button type="button" id="admin-home" class="adm-nav__item adm-nav__home" title="Voltar ao Smart Office"><span data-icon="home"></span><span>Smart Office</span></button>
+      </aside>
+      <div class="adm-main">
+        <header class="adm-topbar">
+          <h1 id="admin-title" class="adm-topbar__title"></h1>
+          <span id="admin-user" class="adm-topbar__user"></span>
+          <button type="button" id="admin-logout" class="adm-icon-btn" aria-label="Terminar sessão" title="Terminar sessão"><span data-icon="logout"></span></button>
+        </header>
+        <div id="admin-view" class="adm-view"></div>
+      </div>
+    </div>
+
+    <div id="admin-dialog" class="popup adm-dialog hidden">
+      <div id="admin-dialog-card" class="popup__card adm-dialog__card" role="dialog" aria-modal="true"></div>
+    </div>
+    <div id="admin-toast" class="adm-toast" aria-live="polite"></div>
+  </section>
+
   <script src="js/dataProvider.js"></script>
+  <script src="js/adminApi.js"></script>
+  <script src="js/adminAuth.js"></script>
+  <script src="js/admin.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
