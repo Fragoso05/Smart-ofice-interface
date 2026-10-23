@@ -6,7 +6,7 @@ const DataProvider = (() => {
 
   const MODE = "live"; // "mock" | "live"
 
- const NODE_RED_URL = "http://10.11.0.210:1880";
+ const NODE_RED_URL = "https://support.smartcitycaboverde.com";
   const STORAGE_KEY = "smartOfficeState";
 
   const AC_TEMP_MIN = 16;

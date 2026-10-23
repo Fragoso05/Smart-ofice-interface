@@ -15,7 +15,7 @@ const AdminApi = (() => {
   // Pode ser sobreposta antes de carregar este ficheiro, por exemplo:
   // <script>window.SMART_OFFICE_ADMIN_API = "https://api.exemplo.com";</script>
   const CONFIG = {
-    baseUrl: (window.SMART_OFFICE_ADMIN_API || "https://violet-beaver-178312.hostingersite.com").replace(/\/+$/, ""),
+    baseUrl: (window.SMART_OFFICE_ADMIN_API || "https://support.smartcitycaboverde.hostingersite.com").replace(/\/+$/, ""),
     timeoutMs: 12000,
     retries: 2,           // só para GET (operações seguras/idempotentes)
     retryDelayMs: 600,
