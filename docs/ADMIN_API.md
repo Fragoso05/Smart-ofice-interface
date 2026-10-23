@@ -1,7 +1,7 @@
 # Área administrativa — contrato da API (Node-RED)
 
 Este documento descreve o que o frontend (`js/adminApi.js`) espera do backend
-Node-RED em `https://support.smartcitycaboverde.hostingersite.com`.
+Node-RED em `https://support.smartcitycaboverde.com`.
 
 O frontend **nunca simula respostas**: se um endpoint não existir, a vista
 mostra «Funcionalidade indisponível» e o resto da interface continua a funcionar.
