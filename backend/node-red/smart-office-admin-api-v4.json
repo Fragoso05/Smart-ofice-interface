@@ -1,0 +1,491 @@
+[
+  {
+    "id": "afc6244b9e1a5101",
+    "type": "tab",
+    "label": "Smart Office Admin API v4",
+    "disabled": false,
+    "info": "API do painel administrativo (sessão DevTeam). Substitui os separadores Admin GET / Consultas / v3.\nGerado por backend/node-red/build-flows.js — não editar à mão."
+  },
+  {
+    "id": "537199ce0d27e51e",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/dashboard",
+    "url": "/api/access/dashboard",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 60,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "cc539b35124555e1",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/users",
+    "url": "/api/access/users",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 104,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "98a3f3a412851125",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "POST /api/access/users",
+    "url": "/api/access/users",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 148,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "10f759af8a9187cc",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "PATCH /api/access/users/:id",
+    "url": "/api/access/users/:id",
+    "method": "patch",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 192,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "23eaeb23f642f398",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/cards",
+    "url": "/api/access/cards",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 236,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "b7889289a73441c1",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "PATCH /api/access/cards/:id",
+    "url": "/api/access/cards/:id",
+    "method": "patch",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 280,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "92cbbb60057be1ff",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/permissions",
+    "url": "/api/access/permissions",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 324,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "988a754068a0843c",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "PATCH /api/access/permissions/:id",
+    "url": "/api/access/permissions/:id",
+    "method": "patch",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 368,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "282d37fbcf311faf",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/rooms",
+    "url": "/api/access/rooms",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 412,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "0cb658f0db0c54ba",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "POST /api/access/rooms",
+    "url": "/api/access/rooms",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 456,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "ace68129f233a8e9",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "PATCH /api/access/rooms/:id",
+    "url": "/api/access/rooms/:id",
+    "method": "patch",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 500,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "bd53466b8f42f9a2",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/device-types",
+    "url": "/api/access/device-types",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 544,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "7e323144d9cb9b88",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/devices",
+    "url": "/api/access/devices",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 588,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "e1b99a9b147b76f9",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "POST /api/access/devices",
+    "url": "/api/access/devices",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 632,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "1f20ae8480e9f700",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "PATCH /api/access/devices/:id",
+    "url": "/api/access/devices/:id",
+    "method": "patch",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 676,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "7430785208365840",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "POST /api/access/devices/:id/:action",
+    "url": "/api/access/devices/:id/:action",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 720,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "478446c828a1fde7",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/devices/:id/status",
+    "url": "/api/access/devices/:id/status",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 764,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "b8d539132d3f716f",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/logs",
+    "url": "/api/access/logs",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 808,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "c51d1433aa82b9f7",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/logs/export",
+    "url": "/api/access/logs/export",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 852,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "0860b953bb9a9fe0",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "POST /api/access/register/start",
+    "url": "/api/access/register/start",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 896,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "fe1d6b19fe64675c",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "GET /api/access/register/status",
+    "url": "/api/access/register/status",
+    "method": "get",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 940,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "78d46c0222387eb2",
+    "type": "http in",
+    "z": "afc6244b9e1a5101",
+    "name": "POST /api/access/register/cancel",
+    "url": "/api/access/register/cancel",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": false,
+    "swaggerDoc": "",
+    "x": 200,
+    "y": 984,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "05dad8a2c1250329",
+    "type": "function",
+    "z": "afc6244b9e1a5101",
+    "name": "Admin API v4",
+    "func": "// ============================================================\n// Smart Office — Admin API v4 (função Node-RED)\n//\n// Entrada 1: http in (pedido do painel)   → valida sessão e inicia a rota\n// Entrada 2: saída do nó MySQL            → continua a rota no passo seguinte\n// Saída 1: nó MySQL (msg.topic = SQL, msg.payload = parâmetros)\n// Saída 2: http response\n//\n// Sessão: igual ao fluxo v3 — cookie \"smart_office_admin\" (64 hex) cujo\n// SHA-256 é chave de global \"smartOfficeAdminSessions\" → expiração (ms).\n// Escritas: só aceites de origens explícitas (cabeçalho Origin).\n// ============================================================\n\nconst crypto = global.get('crypto');\n\nconst ALLOWED_ORIGINS = String(env.get('SMART_OFFICE_ALLOWED_ORIGINS') || 'https://smart-office-self.vercel.app')\n  .split(',').map((s) => s.trim()).filter(Boolean);\nconst ONLINE_WINDOW_SEC = 90;\nconst OFFICE_OFFSET_MIN = (() => {\n  const v = parseInt(env.get('SMART_OFFICE_UTC_OFFSET_MINUTES'), 10);\n  return Number.isInteger(v) && Math.abs(v) <= 840 ? v : -60; // Cabo Verde: UTC-1\n})();\nconst REGISTRATION_TTL_SEC = 120;\n\n// Converte uma coluna DATETIME/TIMESTAMP da sessão MySQL para a hora do escritório\nconst OFFX = `(${OFFICE_OFFSET_MIN} - TIMESTAMPDIFF(MINUTE, UTC_TIMESTAMP(), NOW()))`;\nconst local = (col) => `(${col} + INTERVAL ${OFFX} MINUTE)`;\n\n// ------------------------------------------------------------\n// Utilitários\n// ------------------------------------------------------------\n\nfunction respond(status, body, headers) {\n  msg.statusCode = status;\n  msg.headers = Object.assign({ 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, headers || {});\n  msg.payload = body;\n  delete msg.topic;\n  return [null, msg];\n}\n\nfunction fail(status, error, message, extra) {\n  return respond(status, Object.assign({ success: false, error, message }, extra || {}));\n}\n\nfunction query(sql, params, next) {\n  msg._api.step = next;\n  msg.topic = sql;\n  msg.payload = params || [];\n  return [msg, null];\n}\n\nconst bool = (v) => v === true || v === 1 || v === '1';\nconst str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');\nconst isId = (v) => /^[a-z0-9][a-z0-9._-]{1,79}$/.test(v);\nconst isDeviceId = (v) => /^[a-z0-9][a-z0-9._-]{2,63}$/.test(v);\nconst isTime = (v) => /^([01]\\d|2[0-3]):[0-5]\\d$/.test(v);\nconst isDate = (v) => /^\\d{4}-\\d{2}-\\d{2}$/.test(v);\nconst posInt = (v) => {\n  const n = Number(v);\n  return Number.isSafeInteger(n) && n > 0 ? n : 0;\n};\nconst affected = (rows) => Number(rows && rows.affectedRows) || 0;\n\nfunction readersCsv(value) {\n  if (!Array.isArray(value)) return null;\n  const list = [...new Set(value.filter((r) => r === 'outside' || r === 'inside'))];\n  return list.length ? list.join(',') : null;\n}\n\nfunction configJson(value) {\n  if (value === null) return null;\n  if (typeof value !== 'object' || Array.isArray(value)) return undefined;\n  const json = JSON.stringify(value);\n  return json.length <= 4000 ? json : undefined;\n}\n\nfunction parseJson(text, fallback) {\n  try { return text ? JSON.parse(text) : fallback; } catch (_) { return fallback; }\n}\n\nfunction audit(action, target, details, response) {\n  msg._api.response = response;\n  msg._api.auditing = true;\n  const headers = msg.req.headers || {};\n  return query(\n    'INSERT INTO access_admin_audit (session_ref, action, target, details, ip, origin) VALUES (?, ?, ?, ?, ?, ?)',\n    [msg._api.sessionRef, action, target ? String(target).slice(0, 120) : null, details ? JSON.stringify(details).slice(0, 4000) : null,\n      String(headers['x-forwarded-for'] || msg.req.ip || '').split(',')[0].trim().slice(0, 64), String(headers.origin || '').slice(0, 190)],\n    'auditDone'\n  );\n}\n\n// ------------------------------------------------------------\n// SQL partilhado\n// ------------------------------------------------------------\n\nconst DEVICE_SELECT = `\nSELECT d.id, d.device_id AS deviceId, d.name, d.device_type AS type, t.label AS typeLabel,\n       COALESCE(t.rfid_capable, 0) AS rfidCapable, d.door_id AS roomId, r.name AS roomName,\n       d.hardware_id AS hardwareId, d.description, d.approval_status AS approvalStatus, d.active,\n       d.readers, d.config, d.firmware_version AS firmwareVersion, d.ip_address AS ipAddress,\n       d.wifi_rssi AS wifiRssi, d.last_seen AS lastSeen,\n       TIMESTAMPDIFF(SECOND, d.last_seen, NOW()) AS secondsSinceSeen,\n       (d.last_seen IS NOT NULL AND d.last_seen >= NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND) AS online,\n       (d.credential_hash IS NOT NULL) AS hasCredential, d.credential_created_at AS credentialCreatedAt,\n       d.created_at AS createdAt\n  FROM access_devices d\n  LEFT JOIN access_device_types t ON t.id = d.device_type\n  LEFT JOIN access_rooms r ON r.id = d.door_id`;\n\nfunction formatDevice(d) {\n  return {\n    id: d.id,\n    deviceId: d.deviceId,\n    name: d.name,\n    type: d.type,\n    typeLabel: d.typeLabel || d.type,\n    rfidCapable: bool(d.rfidCapable),\n    roomId: d.roomId,\n    roomName: d.roomName || d.roomId,\n    hardwareId: d.hardwareId,\n    description: d.description,\n    approvalStatus: d.approvalStatus,\n    active: bool(d.active),\n    online: bool(d.online),\n    readers: d.readers ? String(d.readers).split(',').filter(Boolean) : [],\n    config: parseJson(d.config, {}),\n    firmwareVersion: d.firmwareVersion,\n    ipAddress: d.ipAddress,\n    wifiRssi: d.wifiRssi,\n    lastSeen: d.lastSeen,\n    secondsSinceSeen: d.secondsSinceSeen === null || d.secondsSinceSeen === undefined ? null : Number(d.secondsSinceSeen),\n    hasCredential: bool(d.hasCredential),\n    credentialCreatedAt: d.credentialCreatedAt,\n    createdAt: d.createdAt,\n  };\n}\n\nconst LOG_FROM = `\n  FROM access_logs l\n  LEFT JOIN access_cards c ON c.uid = l.uid\n  LEFT JOIN access_users u ON u.id = COALESCE(l.user_id, c.user_id)\n  LEFT JOIN access_rooms r ON r.id = l.door_id`;\n\nconst LOG_COLUMNS = `\nSELECT l.id, l.created_at AS timestamp, COALESCE(l.user_id, c.user_id) AS userId, l.uid,\n       l.device_id AS deviceId, l.reader_id AS readerId, l.door_id AS roomId,\n       COALESCE(r.name, l.door_id) AS roomName, l.decision AS result, l.reason, l.source,\n       u.name AS userName`;\n\nfunction logFilters(q) {\n  const where = [];\n  const params = [];\n  const add = (sql, ...values) => { where.push(sql); params.push(...values); };\n  const text = str(q.q, 80);\n  if (text) add('u.name LIKE ?', `%${text}%`);\n  if (posInt(q.userId)) add('COALESCE(l.user_id, c.user_id) = ?', posInt(q.userId));\n  if (str(q.roomId, 100)) add('l.door_id = ?', str(q.roomId, 100));\n  if (str(q.deviceId, 64)) add('l.device_id = ?', str(q.deviceId, 64));\n  if (q.readerId === 'outside' || q.readerId === 'inside') add('l.reader_id = ?', q.readerId);\n  if (q.direction === 'in') add(\"l.reader_id = 'outside'\");\n  if (q.direction === 'out') add(\"l.reader_id = 'inside'\");\n  if (q.result === 'allowed') add(\"l.decision = 'granted'\");\n  if (q.result === 'denied') add(\"l.decision = 'denied'\");\n  if (isDate(q.dateFrom)) add(`DATE(${local('l.created_at')}) >= ?`, q.dateFrom);\n  if (isDate(q.dateTo)) add(`DATE(${local('l.created_at')}) <= ?`, q.dateTo);\n  if (isTime(q.timeFrom)) add(`TIME(${local('l.created_at')}) >= ?`, `${q.timeFrom}:00`);\n  if (isTime(q.timeTo)) add(`TIME(${local('l.created_at')}) <= ?`, `${q.timeTo}:59`);\n  return { sql: where.length ? ` WHERE ${where.join(' AND ')}` : '', params };\n}\n\nfunction csvCell(value) {\n  const s = value === null || value === undefined ? '' : String(value);\n  return /[\",\\r\\n;]/.test(s) ? `\"${s.replace(/\"/g, '\"\"')}\"` : s;\n}\n\nfunction officeDateParts(value) {\n  const d = new Date(value);\n  if (Number.isNaN(d.getTime())) return ['', ''];\n  const shifted = new Date(d.getTime() + OFFICE_OFFSET_MIN * 60000).toISOString();\n  return [`${shifted.slice(8, 10)}/${shifted.slice(5, 7)}/${shifted.slice(0, 4)}`, shifted.slice(11, 16)];\n}\n\nfunction page(q) {\n  const p = Math.max(1, Math.min(100000, parseInt(q.page, 10) || 1));\n  const size = Math.max(1, Math.min(200, parseInt(q.pageSize, 10) || 10));\n  return { page: p, pageSize: size, offset: (p - 1) * size };\n}\n\n// ------------------------------------------------------------\n// Rotas: cada uma recebe (step, rows, ctx) e devolve query(...) ou respond(...)\n// ------------------------------------------------------------\n\nconst ROUTES = {\n\n  // ---------------- Dashboard ----------------\n  'GET /api/access/dashboard'(step, rows, ctx) {\n    if (step === 'start') {\n      const today = `DATE(${local('created_at')}) = DATE(${local('NOW()')})`;\n      return query(`\nSELECT\n (SELECT COUNT(*) FROM access_users WHERE active = 1) AS activeUsers,\n (SELECT COUNT(*) FROM access_logs WHERE decision = 'granted' AND reader_id = 'outside' AND ${today}) AS entriesToday,\n (SELECT COUNT(*) FROM access_logs WHERE decision = 'granted' AND reader_id = 'inside' AND ${today}) AS exitsToday,\n (SELECT COUNT(*) FROM access_logs WHERE decision = 'denied' AND ${today}) AS deniedToday,\n (SELECT COUNT(*) FROM access_devices WHERE approval_status = 'approved' AND active = 1\n     AND last_seen >= NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND) AS devicesOnline,\n (SELECT COUNT(*) FROM access_devices WHERE approval_status = 'approved' AND active = 1\n     AND (last_seen IS NULL OR last_seen < NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND)) AS devicesOffline,\n (SELECT COUNT(*) FROM access_devices WHERE approval_status = 'pending') AS devicesPending,\n (SELECT COUNT(*) FROM access_rooms) AS doorsCount`, [], 'recent');\n    }\n    if (step === 'recent') {\n      const r = rows[0] || {};\n      ctx.stats = {};\n      Object.keys(r).forEach((k) => { ctx.stats[k] = Number(r[k]) || 0; });\n      return query(`${LOG_COLUMNS} ${LOG_FROM} ORDER BY l.created_at DESC, l.id DESC LIMIT 8`, [], 'cards');\n    }\n    if (step === 'cards') {\n      ctx.recent = rows;\n      return query(`\nSELECT c.id, c.uid, c.active, c.created_at AS createdAt, u.id AS userId, u.name AS userName\n  FROM access_cards c LEFT JOIN access_users u ON u.id = c.user_id\n ORDER BY c.created_at DESC, c.id DESC LIMIT 5`, [], 'done');\n    }\n    return respond(200, { success: true, stats: ctx.stats, recent: ctx.recent, recentCards: rows });\n  },\n\n  // ---------------- Utilizadores ----------------\n  'GET /api/access/users'(step, rows, ctx, req) {\n    const q = req.query;\n    if (step === 'start') {\n      const status = String(q.status || '');\n      if (!['', 'active', 'inactive'].includes(status)) return fail(400, 'validation_error', 'Filtro de estado inválido.');\n      const text = str(q.q, 80);\n      ctx.where = ` WHERE (u.name LIKE ? OR COALESCE(u.contact, '') LIKE ?)\n        AND (? = '' OR (? = 'active' AND u.active = 1) OR (? = 'inactive' AND u.active = 0))`;\n      ctx.params = [`%${text}%`, `%${text}%`, status, status, status];\n      if (posInt(q.id)) { ctx.where += ' AND u.id = ?'; ctx.params.push(posInt(q.id)); }\n      ctx.page = page(q);\n      return query(`SELECT COUNT(*) AS total FROM access_users u ${ctx.where}`, ctx.params, 'list');\n    }\n    if (step === 'list') {\n      ctx.total = Number(rows[0] && rows[0].total) || 0;\n      return query(`\nSELECT u.id, u.name, u.contact, u.email, u.active, u.created_at AS createdAt,\n       (SELECT COUNT(*) FROM access_cards c WHERE c.user_id = u.id) AS cardCount,\n       (SELECT GROUP_CONCAT(DISTINCT COALESCE(r.name, p.door_id) SEPARATOR ',')\n          FROM access_cards c JOIN access_permissions p ON p.card_id = c.id\n          LEFT JOIN access_rooms r ON r.id = p.door_id\n         WHERE c.user_id = u.id) AS rooms\n  FROM access_users u ${ctx.where}\n ORDER BY u.id DESC LIMIT ? OFFSET ?`, [...ctx.params, ctx.page.pageSize, ctx.page.offset], 'done');\n    }\n    return respond(200, { success: true, users: rows.map((u) => Object.assign({}, u, { active: bool(u.active) })), total: ctx.total, page: ctx.page.page, pageSize: ctx.page.pageSize });\n  },\n\n  'POST /api/access/users'(step, rows, ctx, req) {\n    const b = req.body;\n    if (step === 'start') {\n      const name = str(b.name || b.fullName, 150);\n      if (name.length < 2) return fail(400, 'validation_error', 'Nome obrigatório.');\n      ctx.name = name;\n      return query('INSERT INTO access_users (name, contact, email, active) VALUES (?, ?, ?, ?)',\n        [name, str(b.contact, 100) || null, str(b.email, 190) || null, b.active === false ? 0 : 1], 'done');\n    }\n    if (step === 'done') {\n      const user = { id: Number(rows.insertId), name: ctx.name };\n      return audit('user.create', user.id, { name: ctx.name }, [201, { success: true, user }]);\n    }\n  },\n\n  'PATCH /api/access/users/:id'(step, rows, ctx, req) {\n    const b = req.body;\n    const id = posInt(req.params.id);\n    if (step === 'start') {\n      if (!id) return fail(400, 'validation_error', 'ID inválido.');\n      if (b.revokeCards === true) {\n        if (b.active !== false) return fail(400, 'validation_error', 'A revogação requer active=false.');\n        return query('UPDATE access_users u LEFT JOIN access_cards c ON c.user_id = u.id SET u.active = 0, c.active = 0 WHERE u.id = ?', [id], 'done');\n      }\n      const sets = [];\n      const params = [];\n      if (typeof b.name === 'string') {\n        const v = b.name.trim();\n        if (v.length < 2 || v.length > 150) return fail(400, 'validation_error', 'Nome inválido.');\n        sets.push('name = ?'); params.push(v);\n      }\n      if (typeof b.contact === 'string') { sets.push('contact = ?'); params.push(b.contact.trim().slice(0, 100) || null); }\n      if (typeof b.email === 'string') { sets.push('email = ?'); params.push(b.email.trim().slice(0, 190) || null); }\n      if (typeof b.active === 'boolean') { sets.push('active = ?'); params.push(b.active ? 1 : 0); }\n      if (!sets.length) return fail(400, 'validation_error', 'Sem campos para atualizar.');\n      return query(`UPDATE access_users SET ${sets.join(', ')} WHERE id = ?`, [...params, id], 'done');\n    }\n    if (step === 'done') {\n      if (!affected(rows)) return fail(404, 'user_not_found', 'Utilizador não encontrado.');\n      return audit(b.revokeCards ? 'user.revoke' : 'user.update', id, b, [200, { success: true, updated: true }]);\n    }\n  },\n\n  // ---------------- Cartões ----------------\n  'GET /api/access/cards'(step, rows, ctx, req) {\n    const q = req.query;\n    if (step === 'start') {\n      const where = [];\n      const params = [];\n      if (posInt(q.userId)) { where.push('c.user_id = ?'); params.push(posInt(q.userId)); }\n      if (str(q.uid, 50)) { where.push('c.uid LIKE ?'); params.push(`%${str(q.uid, 50).toUpperCase()}%`); }\n      if (str(q.user, 80)) { where.push('u.name LIKE ?'); params.push(`%${str(q.user, 80)}%`); }\n      if (q.status === 'active') where.push('c.active = 1');\n      if (q.status === 'revoked' || q.status === 'inactive') where.push('c.active = 0');\n      ctx.where = where.length ? ` WHERE ${where.join(' AND ')}` : '';\n      ctx.params = params;\n      ctx.page = page(q);\n      return query(`SELECT COUNT(*) AS total FROM access_cards c LEFT JOIN access_users u ON u.id = c.user_id ${ctx.where}`, params, 'list');\n    }\n    if (step === 'list') {\n      ctx.total = Number(rows[0] && rows[0].total) || 0;\n      return query(`\nSELECT c.id, c.user_id AS userId, c.uid, c.active, c.created_at AS createdAt, u.name AS userName,\n       (SELECT GROUP_CONCAT(DISTINCT COALESCE(r.name, p.door_id) SEPARATOR ',')\n          FROM access_permissions p LEFT JOIN access_rooms r ON r.id = p.door_id\n         WHERE p.card_id = c.id) AS permissions,\n       (SELECT MAX(l.created_at) FROM access_logs l WHERE l.uid = c.uid) AS lastUsedAt\n  FROM access_cards c LEFT JOIN access_users u ON u.id = c.user_id ${ctx.where}\n ORDER BY c.id DESC LIMIT ? OFFSET ?`, [...ctx.params, ctx.page.pageSize, ctx.page.offset], 'done');\n    }\n    const cards = rows.map((c) => Object.assign({}, c, { active: bool(c.active), status: bool(c.active) ? 'active' : 'revoked' }));\n    return respond(200, { success: true, cards, total: ctx.total, page: ctx.page.page, pageSize: ctx.page.pageSize });\n  },\n\n  'PATCH /api/access/cards/:id'(step, rows, ctx, req) {\n    const id = posInt(req.params.id);\n    const status = String(req.body.status || '').toLowerCase();\n    if (step === 'start') {\n      if (!id) return fail(400, 'validation_error', 'ID inválido.');\n      if (!['revoked', 'inactive', 'active'].includes(status)) return fail(400, 'validation_error', 'Estado do cartão inválido.');\n      return query('UPDATE access_cards SET active = ? WHERE id = ?', [status === 'active' ? 1 : 0, id], 'done');\n    }\n    if (step === 'done') {\n      if (!affected(rows)) return fail(404, 'not_found', 'Cartão não encontrado.');\n      return audit('card.status', id, { status }, [200, { success: true, updated: true, status: status === 'active' ? 'active' : 'revoked' }]);\n    }\n  },\n\n  // ---------------- Permissões (por utilizador + sala) ----------------\n  'GET /api/access/permissions'(step, rows, ctx, req) {\n    const userId = posInt(req.query.userId);\n    if (step === 'start') {\n      return query(`\nSELECT MIN(p.id) AS id, c.user_id AS userId, p.door_id AS roomId, COALESCE(r.name, p.door_id) AS roomName,\n       MAX(p.can_enter) AS canEnter, MAX(p.can_exit) AS canExit,\n       MIN(p.time_from) AS timeFrom, MAX(p.time_to) AS timeTo\n  FROM access_permissions p\n  JOIN access_cards c ON c.id = p.card_id\n  LEFT JOIN access_rooms r ON r.id = p.door_id\n WHERE (? = 0 OR c.user_id = ?)\n GROUP BY c.user_id, p.door_id, r.name\n ORDER BY c.user_id, roomName LIMIT 500`, [userId, userId], 'done');\n    }\n    const permissions = rows.map((p) => Object.assign({}, p, {\n      canEnter: bool(p.canEnter),\n      canExit: bool(p.canExit),\n      schedule: p.timeFrom ? { from: String(p.timeFrom).slice(0, 5), to: String(p.timeTo || '').slice(0, 5) } : null,\n    }));\n    return respond(200, { success: true, permissions });\n  },\n\n  // :id = ID do utilizador. Cria a permissão nos cartões que ainda não a têm e atualiza todos.\n  'PATCH /api/access/permissions/:id'(step, rows, ctx, req) {\n    const b = req.body;\n    const userId = posInt(req.params.id);\n    const roomId = str(b.roomId || b.doorId, 100);\n    if (step === 'start') {\n      if (!userId) return fail(400, 'validation_error', 'ID de utilizador inválido.');\n      if (!roomId || typeof b.canEnter !== 'boolean' || typeof b.canExit !== 'boolean') {\n        return fail(400, 'validation_error', 'roomId, canEnter e canExit são obrigatórios.');\n      }\n      return query('SELECT (SELECT COUNT(*) FROM access_rooms WHERE id = ?) AS roomExists, (SELECT COUNT(*) FROM access_cards WHERE user_id = ?) AS cards',\n        [roomId, userId], 'insert');\n    }\n    if (step === 'insert') {\n      const r = rows[0] || {};\n      if (!Number(r.roomExists)) return fail(404, 'room_not_found', 'Sala/porta inexistente.');\n      if (!Number(r.cards)) return fail(409, 'user_without_cards', 'O utilizador não tem cartões associados.');\n      return query(`\nINSERT INTO access_permissions (card_id, door_id, can_enter, can_exit)\nSELECT c.id, ?, ?, ? FROM access_cards c\n WHERE c.user_id = ? AND NOT EXISTS (SELECT 1 FROM access_permissions p WHERE p.card_id = c.id AND p.door_id = ?)`,\n      [roomId, b.canEnter ? 1 : 0, b.canExit ? 1 : 0, userId, roomId], 'update');\n    }\n    if (step === 'update') {\n      return query(`\nUPDATE access_permissions p JOIN access_cards c ON c.id = p.card_id\n   SET p.can_enter = ?, p.can_exit = ?\n WHERE c.user_id = ? AND p.door_id = ?`, [b.canEnter ? 1 : 0, b.canExit ? 1 : 0, userId, roomId], 'done');\n    }\n    return audit('permission.update', `${userId}:${roomId}`, { canEnter: b.canEnter, canExit: b.canExit },\n      [200, { success: true, updated: true, permission: { userId, roomId, canEnter: b.canEnter, canExit: b.canExit } }]);\n  },\n\n  // ---------------- Salas / portas ----------------\n  'GET /api/access/rooms'(step, rows) {\n    if (step === 'start') {\n      return query(`\nSELECT r.id, r.id AS doorId, r.name, r.description, r.created_at AS createdAt,\n       (SELECT COUNT(*) FROM access_devices d WHERE d.door_id = r.id) AS deviceCount\n  FROM access_rooms r ORDER BY r.name`, [], 'done');\n    }\n    return respond(200, { success: true, rooms: rows.map((r) => Object.assign({}, r, { deviceCount: Number(r.deviceCount) || 0 })) });\n  },\n\n  'POST /api/access/rooms'(step, rows, ctx, req) {\n    const b = req.body;\n    const id = str(b.id, 100).toLowerCase();\n    const name = str(b.name, 100);\n    if (step === 'start') {\n      if (!isId(id)) return fail(422, 'validation_error', 'Identificador inválido (minúsculas, números, \"-\", \"_\" ou \".\").');\n      if (name.length < 2) return fail(422, 'validation_error', 'Nome da sala obrigatório.');\n      ctx.duplicate = ['room_exists', 'Já existe uma sala/porta com esse identificador.'];\n      return query('INSERT INTO access_rooms (id, name, description) VALUES (?, ?, ?)', [id, name, str(b.description, 255) || null], 'done');\n    }\n    return audit('room.create', id, { name }, [201, { success: true, room: { id, doorId: id, name, description: str(b.description, 255) || null, deviceCount: 0 } }]);\n  },\n\n  'PATCH /api/access/rooms/:id'(step, rows, ctx, req) {\n    const b = req.body;\n    const id = str(req.params.id, 100);\n    if (step === 'start') {\n      const sets = [];\n      const params = [];\n      if (typeof b.name === 'string') {\n        const v = b.name.trim();\n        if (v.length < 2 || v.length > 100) return fail(422, 'validation_error', 'Nome inválido.');\n        sets.push('name = ?'); params.push(v);\n      }\n      if (typeof b.description === 'string') { sets.push('description = ?'); params.push(b.description.trim().slice(0, 255) || null); }\n      ctx.newId = typeof b.newId === 'string' ? b.newId.trim().toLowerCase() : '';\n      if (ctx.newId && ctx.newId !== id) {\n        if (!isId(ctx.newId)) return fail(422, 'validation_error', 'Novo identificador inválido.');\n        sets.push('id = ?'); params.push(ctx.newId);\n      }\n      if (!sets.length) return fail(400, 'validation_error', 'Sem campos para atualizar.');\n      ctx.sets = sets;\n      ctx.params = params;\n      ctx.duplicate = ['room_exists', 'Já existe uma sala/porta com esse identificador.'];\n      if (ctx.newId && ctx.newId !== id) {\n        // Só se pode mudar o identificador enquanto nada o referencia\n        return query(`SELECT (SELECT COUNT(*) FROM access_devices WHERE door_id = ?) + (SELECT COUNT(*) FROM access_permissions WHERE door_id = ?)\n          + (SELECT COUNT(*) FROM access_registration_requests WHERE door_id = ? AND status = 'waiting_card') AS refs`, [id, id, id], 'update');\n      }\n      return query(`UPDATE access_rooms SET ${sets.join(', ')} WHERE id = ?`, [...params, id], 'done');\n    }\n    if (step === 'update') {\n      if (Number(rows[0] && rows[0].refs) > 0) {\n        return fail(409, 'room_in_use', 'Não é possível mudar o identificador: existem dispositivos ou permissões associados. Altere apenas o nome.');\n      }\n      return query(`UPDATE access_rooms SET ${ctx.sets.join(', ')} WHERE id = ?`, [...ctx.params, id], 'done');\n    }\n    if (!affected(rows)) return fail(404, 'room_not_found', 'Sala/porta inexistente.');\n    return audit('room.update', id, b, [200, { success: true, updated: true, room: { id: ctx.newId || id } }]);\n  },\n\n  // ---------------- Dispositivos ----------------\n  'GET /api/access/device-types'(step, rows) {\n    if (step === 'start') {\n      return query('SELECT id, label, category, rfid_capable AS rfidCapable, config_schema AS configSchema FROM access_device_types WHERE active = 1 ORDER BY sort_order, label', [], 'done');\n    }\n    return respond(200, { success: true, types: rows.map((t) => ({ id: t.id, label: t.label, category: t.category, rfidCapable: bool(t.rfidCapable), configSchema: parseJson(t.configSchema, []) })) });\n  },\n\n  'GET /api/access/devices'(step, rows, ctx, req) {\n    const q = req.query;\n    if (step === 'start') {\n      const where = [];\n      const params = [];\n      const text = str(q.q, 80);\n      if (text) { where.push('(d.name LIKE ? OR d.device_id LIKE ? OR COALESCE(d.ip_address, \\'\\') LIKE ?)'); params.push(`%${text}%`, `%${text}%`, `%${text}%`); }\n      if (/^[a-z0-9_]{2,40}$/.test(q.type || '')) { where.push('d.device_type = ?'); params.push(q.type); }\n      if (str(q.roomId, 100)) { where.push('d.door_id = ?'); params.push(str(q.roomId, 100)); }\n      if (q.status === 'active') where.push(\"d.approval_status = 'approved' AND d.active = 1\");\n      if (q.status === 'inactive') where.push(\"d.approval_status = 'approved' AND d.active = 0\");\n      if (['pending', 'rejected', 'revoked'].includes(q.status)) { where.push('d.approval_status = ?'); params.push(q.status); }\n      if (q.connection === 'online') where.push(`d.last_seen >= NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND`);\n      if (q.connection === 'offline') where.push(`(d.last_seen IS NULL OR d.last_seen < NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND)`);\n      if (q.rfid === '1') where.push('COALESCE(t.rfid_capable, 0) = 1');\n      return query(`${DEVICE_SELECT}${where.length ? ` WHERE ${where.join(' AND ')}` : ''}\n ORDER BY (d.approval_status = 'pending') DESC, d.name, d.device_id LIMIT 500`, params, 'done');\n    }\n    return respond(200, { success: true, devices: rows.map(formatDevice), onlineWindowSec: ONLINE_WINDOW_SEC });\n  },\n\n  'POST /api/access/devices'(step, rows, ctx, req) {\n    const b = req.body;\n    if (step === 'start') {\n      const deviceId = str(b.deviceId, 64).toLowerCase();\n      const name = str(b.name, 100);\n      const type = str(b.type, 40);\n      const roomId = str(b.roomId, 100) || null;\n      const hardwareId = str(b.hardwareId, 100) || null;\n      const config = configJson(b.config === undefined ? {} : b.config);\n      if (!isDeviceId(deviceId)) return fail(422, 'validation_error', 'ID do dispositivo inválido (3–64 caracteres: minúsculas, números, \".\", \"-\", \"_\").');\n      if (name.length < 2) return fail(422, 'validation_error', 'Nome do dispositivo obrigatório.');\n      if (!/^[a-z0-9_]{2,40}$/.test(type)) return fail(422, 'validation_error', 'Tipo de dispositivo inválido.');\n      if (hardwareId && !/^[A-Za-z0-9:._-]{4,100}$/.test(hardwareId)) return fail(422, 'validation_error', 'Identificador de hardware inválido.');\n      if (config === undefined) return fail(422, 'validation_error', 'Configuração inválida.');\n      ctx.deviceId = deviceId;\n      ctx.duplicate = ['device_exists', 'Já existe um dispositivo com esse ID ou identificador de hardware.'];\n      return query(`\nINSERT INTO access_devices (device_id, name, device_type, door_id, hardware_id, description, approval_status, active, online, readers, config)\nSELECT ?, ?, t.id, ?, ?, ?, 'approved', ?, 0, ?, ?\n  FROM access_device_types t\n WHERE t.id = ? AND (? IS NULL OR EXISTS (SELECT 1 FROM access_rooms r WHERE r.id = ?))`,\n      [deviceId, name, roomId, hardwareId, str(b.description, 255) || null, b.active === false ? 0 : 1,\n        readersCsv(b.readers) || 'outside', config, type, roomId, roomId], 'reload');\n    }\n    if (step === 'reload') {\n      if (!affected(rows)) return fail(422, 'validation_error', 'Tipo de dispositivo ou sala/porta inexistente.');\n      ctx.id = Number(rows.insertId);\n      return query(`${DEVICE_SELECT} WHERE d.id = ?`, [ctx.id], 'done');\n    }\n    const device = rows[0] ? formatDevice(rows[0]) : { id: ctx.id, deviceId: ctx.deviceId };\n    return audit('device.create', ctx.deviceId, { name: device.name, type: device.type, roomId: device.roomId }, [201, { success: true, device }]);\n  },\n\n  'PATCH /api/access/devices/:id'(step, rows, ctx, req) {\n    const b = req.body;\n    const id = posInt(req.params.id);\n    if (step === 'start') {\n      if (!id) return fail(400, 'validation_error', 'ID inválido.');\n      const sets = [];\n      const params = [];\n      const where = ['d.id = ?'];\n      const whereParams = [id];\n      if (typeof b.name === 'string') {\n        const v = b.name.trim();\n        if (v.length < 2 || v.length > 100) return fail(422, 'validation_error', 'Nome inválido.');\n        sets.push('d.name = ?'); params.push(v);\n      }\n      if (typeof b.type === 'string') {\n        if (!/^[a-z0-9_]{2,40}$/.test(b.type)) return fail(422, 'validation_error', 'Tipo inválido.');\n        sets.push('d.device_type = ?'); params.push(b.type);\n        where.push('EXISTS (SELECT 1 FROM access_device_types t WHERE t.id = ?)'); whereParams.push(b.type);\n      }\n      if (b.roomId === null || typeof b.roomId === 'string') {\n        const roomId = b.roomId ? b.roomId.trim().slice(0, 100) : null;\n        sets.push('d.door_id = ?'); params.push(roomId);\n        if (roomId) { where.push('EXISTS (SELECT 1 FROM access_rooms r WHERE r.id = ?)'); whereParams.push(roomId); }\n      }\n      if (b.hardwareId === null || typeof b.hardwareId === 'string') {\n        const hw = b.hardwareId ? b.hardwareId.trim() : '';\n        if (hw && !/^[A-Za-z0-9:._-]{4,100}$/.test(hw)) return fail(422, 'validation_error', 'Identificador de hardware inválido.');\n        sets.push('d.hardware_id = ?'); params.push(hw || null);\n      }\n      if (b.description === null || typeof b.description === 'string') { sets.push('d.description = ?'); params.push(b.description ? b.description.trim().slice(0, 255) || null : null); }\n      if (Array.isArray(b.readers)) {\n        const csv = readersCsv(b.readers);\n        if (!csv) return fail(422, 'validation_error', 'Indique pelo menos um leitor (outside/inside).');\n        sets.push('d.readers = ?'); params.push(csv);\n      }\n      if (b.config !== undefined) {\n        const cfg = configJson(b.config);\n        if (cfg === undefined) return fail(422, 'validation_error', 'Configuração inválida.');\n        sets.push('d.config = ?'); params.push(cfg);\n      }\n      if (typeof b.active === 'boolean') {\n        sets.push('d.active = ?'); params.push(b.active ? 1 : 0);\n        // Só dispositivos aprovados podem ser ativados\n        if (b.active) where.push(\"d.approval_status = 'approved'\");\n      }\n      if (!sets.length) return fail(400, 'validation_error', 'Sem campos para atualizar.');\n      ctx.duplicate = ['device_exists', 'Esse identificador de hardware já pertence a outro dispositivo.'];\n      return query(`UPDATE access_devices d SET ${sets.join(', ')} WHERE ${where.join(' AND ')}`, [...params, ...whereParams], 'check');\n    }\n    if (step === 'check') {\n      if (affected(rows)) return query(`${DEVICE_SELECT} WHERE d.id = ?`, [id], 'done');\n      return query('SELECT approval_status AS approvalStatus FROM access_devices WHERE id = ?', [id], 'explain');\n    }\n    if (step === 'explain') {\n      if (!rows.length) return fail(404, 'device_not_found', 'Dispositivo não encontrado.');\n      if (b.active === true && rows[0].approvalStatus !== 'approved') return fail(409, 'device_not_approved', 'O dispositivo tem de ser aprovado antes de ser ativado.');\n      return fail(422, 'validation_error', 'Tipo de dispositivo ou sala/porta inexistente.');\n    }\n    const device = formatDevice(rows[0]);\n    return audit('device.update', device.deviceId, b, [200, { success: true, device }]);\n  },\n\n  // Ações: approve | reject | revoke | credentials\n  'POST /api/access/devices/:id/:action'(step, rows, ctx, req) {\n    const id = posInt(req.params.id);\n    const action = String(req.params.action || '');\n    if (step === 'start') {\n      if (!id) return fail(400, 'validation_error', 'ID inválido.');\n      if (action === 'approve') {\n        const active = req.body.active === false ? 0 : 1;\n        return query(\"UPDATE access_devices SET approval_status = 'approved', active = ? WHERE id = ? AND approval_status IN ('pending', 'rejected', 'revoked')\", [active, id], 'check');\n      }\n      if (action === 'reject') {\n        return query(\"UPDATE access_devices SET approval_status = 'rejected', active = 0 WHERE id = ? AND approval_status = 'pending'\", [id], 'check');\n      }\n      if (action === 'revoke') {\n        return query(\"UPDATE access_devices SET approval_status = 'revoked', active = 0, credential_hash = NULL, credential_created_at = NULL WHERE id = ? AND approval_status <> 'revoked'\", [id], 'check');\n      }\n      if (action === 'credentials') {\n        if (!crypto || typeof crypto.randomBytes !== 'function') return fail(503, 'server_config', 'Gerador criptográfico indisponível no servidor.');\n        // A chave só existe em memória até ser devolvida uma vez; na BD fica apenas o SHA-256\n        ctx.secret = crypto.randomBytes(24).toString('hex');\n        const hash = crypto.createHash('sha256').update(ctx.secret).digest('hex');\n        return query(\"UPDATE access_devices SET credential_hash = ?, credential_created_at = NOW() WHERE id = ? AND approval_status = 'approved'\", [hash, id], 'check');\n      }\n      return fail(404, 'not_found', 'Ação desconhecida.');\n    }\n    if (step === 'check') {\n      if (affected(rows)) return query(`${DEVICE_SELECT} WHERE d.id = ?`, [id], 'done');\n      return query('SELECT approval_status AS approvalStatus FROM access_devices WHERE id = ?', [id], 'explain');\n    }\n    if (step === 'explain') {\n      if (!rows.length) return fail(404, 'device_not_found', 'Dispositivo não encontrado.');\n      const s = rows[0].approvalStatus;\n      if (action === 'credentials') return fail(409, 'device_not_approved', 'Só é possível gerar credenciais para dispositivos aprovados.');\n      return fail(409, 'invalid_state', `Ação \"${action}\" não permitida no estado atual (${s}).`);\n    }\n    const device = formatDevice(rows[0]);\n    const body = { success: true, device };\n    if (action === 'credentials') {\n      body.credential = {\n        deviceKey: ctx.secret,\n        header: 'X-Device-Key',\n        instructions: 'Copie esta chave para DEVICE_API_KEY no firmware do ESP32. Não volta a ser mostrada; gere uma nova se a perder.',\n      };\n    }\n    return audit(`device.${action}`, device.deviceId, null, [200, body]);\n  },\n\n  // Teste de comunicação: lê o último heartbeat registado pelo dispositivo\n  'GET /api/access/devices/:id/status'(step, rows, ctx, req) {\n    const id = posInt(req.params.id);\n    if (step === 'start') {\n      if (!id) return fail(400, 'validation_error', 'ID inválido.');\n      return query(`${DEVICE_SELECT} WHERE d.id = ?`, [id], 'done');\n    }\n    if (!rows.length) return fail(404, 'device_not_found', 'Dispositivo não encontrado.');\n    const d = formatDevice(rows[0]);\n    let message;\n    if (d.secondsSinceSeen === null) message = 'O dispositivo nunca comunicou com o servidor.';\n    else if (d.online) message = `Comunicação OK: último contacto há ${d.secondsSinceSeen} s.`;\n    else message = `Sem comunicação há ${d.secondsSinceSeen} s (limite ${ONLINE_WINDOW_SEC} s).`;\n    return respond(200, { success: true, online: d.online, secondsSinceSeen: d.secondsSinceSeen, lastSeen: d.lastSeen,\n      ipAddress: d.ipAddress, firmwareVersion: d.firmwareVersion, wifiRssi: d.wifiRssi, onlineWindowSec: ONLINE_WINDOW_SEC, message, device: d });\n  },\n\n  // ---------------- Histórico ----------------\n  'GET /api/access/logs'(step, rows, ctx, req) {\n    const q = req.query;\n    if (step === 'start') {\n      ctx.filter = logFilters(q);\n      ctx.page = page(q);\n      return query(`SELECT COUNT(*) AS total ${LOG_FROM}${ctx.filter.sql}`, ctx.filter.params, 'list');\n    }\n    if (step === 'list') {\n      ctx.total = Number(rows[0] && rows[0].total) || 0;\n      const order = q.order === 'asc' ? 'ASC' : 'DESC';\n      return query(`${LOG_COLUMNS} ${LOG_FROM}${ctx.filter.sql} ORDER BY l.created_at ${order}, l.id ${order} LIMIT ? OFFSET ?`,\n        [...ctx.filter.params, ctx.page.pageSize, ctx.page.offset], 'done');\n    }\n    return respond(200, { success: true, logs: rows, total: ctx.total, page: ctx.page.page, pageSize: ctx.page.pageSize });\n  },\n\n  'GET /api/access/logs/export'(step, rows, ctx, req) {\n    const q = req.query;\n    if (step === 'start') {\n      const filter = logFilters(q);\n      const order = q.order === 'asc' ? 'ASC' : 'DESC';\n      return query(`${LOG_COLUMNS} ${LOG_FROM}${filter.sql} ORDER BY l.created_at ${order}, l.id ${order} LIMIT 10000`, filter.params, 'done');\n    }\n    const header = ['Data', 'Hora', 'Utilizador', 'UID', 'Sala', 'Dispositivo', 'Leitor', 'Movimento', 'Resultado', 'Motivo'];\n    const lines = [header].concat(rows.map((r) => {\n      const [date, time] = officeDateParts(r.timestamp);\n      const move = r.readerId === 'outside' ? 'Entrada' : r.readerId === 'inside' ? 'Saída' : 'Leitura';\n      return [date, time, r.userName || 'Cartão desconhecido', r.uid, r.roomName, r.deviceId, r.readerId, move,\n        r.result === 'granted' ? 'Permitido' : r.result === 'denied' ? 'Negado' : r.result, r.reason];\n    })).map((cols) => cols.map(csvCell).join(','));\n    const today = officeDateParts(new Date())[0].split('/').reverse().join('-');\n    return respond(200, '﻿' + lines.join('\\r\\n') + '\\r\\n', {\n      'Content-Type': 'text/csv; charset=utf-8',\n      'Content-Disposition': `attachment; filename=\"acessos_${today}.csv\"`,\n    });\n  },\n\n  // ---------------- Registo RFID (painel) ----------------\n  'POST /api/access/register/start'(step, rows, ctx, req) {\n    const b = req.body;\n    if (step === 'start') {\n      const deviceId = str(b.deviceId, 64);\n      const readerId = b.readerId === 'inside' ? 'inside' : 'outside';\n      const userId = b.userId === undefined || b.userId === null ? 0 : posInt(b.userId);\n      const name = str(b.name, 150);\n      const doorId = str(b.doorId, 100);\n      const perms = b.permissions || {};\n      const schedule = b.schedule && typeof b.schedule === 'object' ? b.schedule : null;\n      if (b.userId !== undefined && b.userId !== null && !userId) return fail(422, 'validation_error', 'Utilizador inválido.');\n      if (!userId && name.length < 2) return fail(422, 'validation_error', 'Nome completo obrigatório.');\n      if (!deviceId) return fail(422, 'validation_error', 'Escolha o dispositivo de registo.');\n      if (!doorId) return fail(422, 'validation_error', 'Escolha a sala ou porta.');\n      if (perms.canEnter !== true && perms.canExit !== true) return fail(422, 'validation_error', 'Selecione pelo menos uma permissão (entrada ou saída).');\n      if (schedule && (!isTime(schedule.from) || !isTime(schedule.to) || schedule.from === schedule.to)) {\n        return fail(422, 'validation_error', 'Horário permitido inválido.');\n      }\n      Object.assign(ctx, {\n        deviceId, readerId, userId, name, doorId, schedule,\n        contact: str(b.contact, 100) || null,\n        email: str(b.email, 190) || null,\n        canEnter: perms.canEnter === true ? 1 : 0,\n        canExit: perms.canExit === true ? 1 : 0,\n        active: b.active === false ? 0 : 1,\n      });\n      return query(`\nSELECT d.device_id AS deviceId, d.approval_status AS approvalStatus, d.active, d.readers,\n       COALESCE(t.rfid_capable, 0) AS rfidCapable,\n       (d.last_seen IS NOT NULL AND d.last_seen >= NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND) AS online,\n       (SELECT COUNT(*) FROM access_rooms WHERE id = ?) AS roomExists,\n       (SELECT COUNT(*) FROM access_users WHERE id = ?) AS userExists\n  FROM access_devices d LEFT JOIN access_device_types t ON t.id = d.device_type\n WHERE d.device_id = ?`, [ctx.doorId, ctx.userId, ctx.deviceId], 'supersede');\n    }\n    if (step === 'supersede') {\n      const d = rows[0];\n      if (!d) return fail(404, 'device_not_found', 'Dispositivo de registo inexistente.');\n      if (d.approvalStatus !== 'approved') return fail(409, 'device_not_approved', 'O dispositivo ainda não foi aprovado.');\n      if (!bool(d.active)) return fail(409, 'device_disabled', 'O dispositivo está desativado.');\n      if (!bool(d.rfidCapable)) return fail(422, 'reader_unavailable', 'Este dispositivo não tem leitor RFID.');\n      const readers = String(d.readers || 'outside').split(',');\n      if (!readers.includes(ctx.readerId)) return fail(422, 'reader_unavailable', `O leitor \"${ctx.readerId}\" não está instalado neste dispositivo.`);\n      if (!bool(d.online)) return fail(409, 'device_offline', 'O ESP32 está offline (sem heartbeat recente).');\n      if (!Number(d.roomExists)) return fail(404, 'room_not_found', 'Sala/porta inexistente.');\n      if (ctx.userId && !Number(d.userExists)) return fail(404, 'user_not_found', 'Utilizador não encontrado.');\n      // Um leitor atende um registo de cada vez: pedidos anteriores ficam cancelados\n      return query(\"UPDATE access_registration_requests SET status = 'cancelled', error_code = 'superseded' WHERE device_id = ? AND status = 'waiting_card'\", [ctx.deviceId], 'insert');\n    }\n    if (step === 'insert') {\n      ctx.registrationId = `reg-${Date.now()}-${crypto && crypto.randomBytes ? crypto.randomBytes(6).toString('hex') : Math.floor(Math.random() * 1e9)}`;\n      return query(`\nINSERT INTO access_registration_requests\n (id, device_id, reader_id, name, contact, email, status, expires_at, user_id, door_id, can_enter, can_exit, user_active, time_from, time_to)\nVALUES (?, ?, ?, ?, ?, ?, 'waiting_card', NOW() + INTERVAL ${REGISTRATION_TTL_SEC} SECOND, ?, ?, ?, ?, ?, ?, ?)`,\n      [ctx.registrationId, ctx.deviceId, ctx.readerId, ctx.name || '(utilizador existente)', ctx.contact, ctx.email,\n        ctx.userId || null, ctx.doorId, ctx.canEnter, ctx.canExit, ctx.active,\n        ctx.schedule ? `${ctx.schedule.from}:00` : null, ctx.schedule ? `${ctx.schedule.to}:00` : null], 'done');\n    }\n    return audit('registration.start', ctx.registrationId, { deviceId: ctx.deviceId, userId: ctx.userId || null, doorId: ctx.doorId },\n      [201, { success: true, registrationId: ctx.registrationId, status: 'waiting_card', deviceId: ctx.deviceId,\n        expiresAt: new Date(Date.now() + REGISTRATION_TTL_SEC * 1000).toISOString(), message: 'Aproxime o cartão do leitor' }]);\n  },\n\n  'GET /api/access/register/status'(step, rows, ctx, req) {\n    const id = str(req.query.id || req.query.registrationId, 80);\n    if (step === 'start') {\n      if (!id) return fail(400, 'registration_id_required', 'Identificador de registo em falta.');\n      return query(`\nSELECT q.id, q.device_id AS deviceId, q.reader_id AS readerId, q.name, q.uid, q.status, q.error_code AS errorCode,\n       q.expires_at AS expiresAt, q.completed_at AS completedAt, q.user_id AS userId, q.card_id AS cardId,\n       q.door_id AS doorId, COALESCE(r.name, q.door_id) AS roomName, d.name AS deviceName,\n       (q.status = 'waiting_card' AND q.expires_at <= NOW()) AS isExpired,\n       (d.last_seen IS NOT NULL AND d.last_seen >= NOW() - INTERVAL ${ONLINE_WINDOW_SEC} SECOND) AS deviceOnline,\n       u.name AS userName, ou.name AS ownerName\n  FROM access_registration_requests q\n  LEFT JOIN access_devices d ON d.device_id = q.device_id\n  LEFT JOIN access_rooms r ON r.id = q.door_id\n  LEFT JOIN access_users u ON u.id = q.user_id\n  LEFT JOIN access_cards oc ON q.status = 'duplicate' AND oc.uid = q.uid\n  LEFT JOIN access_users ou ON ou.id = oc.user_id\n WHERE q.id = ? LIMIT 1`, [id], 'done');\n    }\n    if (!rows.length) return fail(404, 'registration_not_found', 'Sessão de registo não encontrada.');\n    const r = rows[0];\n    const status = bool(r.isExpired) ? 'expired' : r.status;\n    return respond(200, {\n      success: true, registrationId: r.id, status, errorCode: r.errorCode, uid: r.uid,\n      name: r.userName || r.name, user: r.userId ? { id: r.userId, name: r.userName || r.name } : null, cardId: r.cardId,\n      deviceId: r.deviceId, deviceName: r.deviceName, readerId: r.readerId, doorId: r.doorId, roomName: r.roomName,\n      deviceOnline: bool(r.deviceOnline), ownerName: r.ownerName, expiresAt: r.expiresAt, completedAt: r.completedAt,\n    });\n  },\n\n  'POST /api/access/register/cancel'(step, rows, ctx, req) {\n    const id = str(req.body.registrationId || req.body.id, 80);\n    if (step === 'start') {\n      if (!id) return fail(400, 'registration_id_required', 'Identificador de registo em falta.');\n      return query(\"UPDATE access_registration_requests SET status = 'cancelled', error_code = 'cancelled_by_admin' WHERE id = ? AND status = 'waiting_card'\", [id], 'check');\n    }\n    if (step === 'check') {\n      if (affected(rows)) return audit('registration.cancel', id, null, [200, { success: true, status: 'cancelled' }]);\n      return query('SELECT status FROM access_registration_requests WHERE id = ?', [id], 'done');\n    }\n    if (!rows.length) return fail(404, 'registration_not_found', 'Sessão de registo não encontrada.');\n    // Ex.: o cartão foi gravado entretanto — o painel deve mostrar o estado real\n    return fail(409, 'registration_not_cancellable', `O registo já não pode ser cancelado (estado: ${rows[0].status}).`, { status: rows[0].status });\n  },\n};\n\n// ------------------------------------------------------------\n// Execução\n// ------------------------------------------------------------\n\nif (!msg._api) {\n  const route = `${String(msg.req.method || '').toUpperCase()} ${msg.req.route && msg.req.route.path}`;\n  if (!ROUTES[route]) return fail(404, 'not_found', 'Rota inexistente.');\n  if (!crypto || typeof crypto.createHash !== 'function') return fail(503, 'server_config', 'Crypto indisponível no servidor.');\n\n  const sessions = global.get('smartOfficeAdminSessions') || {};\n  const cookies = String((msg.req.headers || {}).cookie || '').split(';').map((x) => x.trim());\n  const found = cookies.find((x) => x.startsWith('smart_office_admin='));\n  const token = found ? found.substring('smart_office_admin='.length) : '';\n  const digest = /^[a-f0-9]{64}$/.test(token) ? crypto.createHash('sha256').update(token).digest('hex') : '';\n  if (!digest || !sessions[digest] || sessions[digest] <= Date.now()) {\n    return fail(401, 'session_expired', 'Sessão administrativa necessária.');\n  }\n\n  const method = String(msg.req.method).toUpperCase();\n  const origin = (msg.req.headers || {}).origin || '';\n  if (method !== 'GET' && !ALLOWED_ORIGINS.includes(origin)) {\n    return fail(403, 'forbidden', 'Origem não autorizada.');\n  }\n\n  msg._api = { route, step: 'start', ctx: {}, sessionRef: digest.slice(0, 12) };\n}\n\nconst api = msg._api;\nconst rows = api.step === 'start' ? [] : msg.payload;\n\nif (api.step === 'auditDone') {\n  const [status, body] = api.response;\n  return respond(status, body);\n}\n\nconst req = {\n  query: msg.req.query || {},\n  params: msg.req.params || {},\n  body: msg._body || (msg._body = (msg.payload && typeof msg.payload === 'object' && !Array.isArray(msg.payload) && api.step === 'start') ? msg.payload : {}),\n};\n\nreturn ROUTES[api.route](api.step, rows, api.ctx, req);\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 544,
+    "wires": [
+      [
+        "ec27326092dfa93f"
+      ],
+      [
+        "d5b255379facd103"
+      ]
+    ]
+  },
+  {
+    "id": "ec27326092dfa93f",
+    "type": "mysql",
+    "z": "afc6244b9e1a5101",
+    "mydb": "96426fc49ec39659",
+    "name": "MySQL Smart Office (existente)",
+    "x": 860,
+    "y": 484,
+    "wires": [
+      [
+        "05dad8a2c1250329"
+      ]
+    ]
+  },
+  {
+    "id": "d5b255379facd103",
+    "type": "http response",
+    "z": "afc6244b9e1a5101",
+    "name": "Resposta HTTP",
+    "statusCode": "",
+    "headers": {},
+    "x": 880,
+    "y": 584,
+    "wires": []
+  },
+  {
+    "id": "32217ebadeb987e1",
+    "type": "catch",
+    "z": "afc6244b9e1a5101",
+    "name": "Erros MySQL / função",
+    "scope": [
+      "ec27326092dfa93f",
+      "05dad8a2c1250329"
+    ],
+    "uncaught": false,
+    "x": 560,
+    "y": 684,
+    "wires": [
+      [
+        "bb451f1542bdd582"
+      ]
+    ]
+  },
+  {
+    "id": "bb451f1542bdd582",
+    "type": "function",
+    "z": "afc6244b9e1a5101",
+    "name": "Erros Admin API",
+    "func": "// ============================================================\n// Smart Office — Admin API v4: tratamento de erros (nó catch → função)\n// Converte erros MySQL em respostas JSON legíveis, sem expor SQL.\n// ============================================================\n\nconst api = msg._api || {};\nconst code = (msg.error && (msg.error.code || (msg.error.source && msg.error.source.code))) || '';\nconst text = String((msg.error && msg.error.message) || '');\n\nmsg.headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };\n\n// A escrita já foi confirmada; só a auditoria falhou → devolver o resultado real\nif (api.auditing && api.response) {\n  node.warn(`Auditoria não registada (${api.route}): ${text}`);\n  msg.statusCode = api.response[0];\n  msg.payload = api.response[1];\n  return msg;\n}\n\nif (code === 'ER_DUP_ENTRY' || /Duplicate entry/i.test(text)) {\n  const [error, message] = (api.ctx && api.ctx.duplicate) || ['duplicate_entry', 'Registo duplicado.'];\n  msg.statusCode = 409;\n  msg.payload = { success: false, error, message };\n  return msg;\n}\n\nif (['ER_NO_SUCH_TABLE', 'ER_BAD_FIELD_ERROR', 'ER_SP_DOES_NOT_EXIST'].includes(code) ||\n    /doesn't exist|Unknown column/i.test(text)) {\n  node.error(`Esquema MySQL desatualizado (${api.route || '?'}): ${text}`, msg);\n  msg.statusCode = 500;\n  msg.payload = { success: false, error: 'schema_outdated', message: 'Base de dados desatualizada: executar backend/sql/001_device_management.sql.' };\n  return msg;\n}\n\nnode.error(`Erro MySQL (${api.route || '?'} / ${api.step || '?'}): ${text}`, msg);\nmsg.statusCode = 500;\nmsg.payload = { success: false, error: 'database_error', message: 'Erro na base de dados (MySQL). Consultar o Debug do Node-RED.' };\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 820,
+    "y": 684,
+    "wires": [
+      [
+        "d5b255379facd103"
+      ]
+    ]
+  }
+]

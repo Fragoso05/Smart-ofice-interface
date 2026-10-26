@@ -35,6 +35,7 @@ const AdminApi = (() => {
     cards: "/api/access/cards",
     rooms: "/api/access/rooms",
     devices: "/api/access/devices",
+    deviceTypes: "/api/access/device-types",
     permissions: "/api/access/permissions",
 
     dashboard: "/api/access/dashboard",
@@ -54,18 +55,33 @@ const AdminApi = (() => {
     forbidden: "Não tem permissão para esta operação.",
     registration_id_required: "Identificador de registo em falta.",
     registration_not_found: "Sessão de registo não encontrada ou expirada.",
+    registration_not_cancellable: "O registo já não pode ser cancelado.",
     card_already_registered: "Este cartão já está registado.",
-    device_offline: "O dispositivo ESP32 está offline.",
+    device_offline: "O ESP32 está offline (sem heartbeat recente).",
+    device_disabled: "O dispositivo está desativado.",
+    device_not_approved: "O dispositivo ainda não foi aprovado.",
     device_not_found: "Dispositivo desconhecido.",
+    device_exists: "Já existe um dispositivo com esse identificador.",
+    reader_unavailable: "O leitor RFID indicado não está disponível neste dispositivo.",
+    room_exists: "Já existe uma sala/porta com esse identificador.",
+    room_in_use: "A sala/porta está em uso.",
+    room_not_found: "Sala/porta inexistente.",
     user_not_found: "Utilizador não encontrado.",
+    user_without_cards: "O utilizador não tem cartões associados.",
+    database_error: "Erro na base de dados (MySQL).",
+    schema_outdated: "A base de dados não foi atualizada: falta executar a migração SQL.",
+    server_config: "Configuração do servidor incompleta.",
     validation_error: "Dados inválidos.",
   };
+
+  // Códigos genéricos: a mensagem do servidor é mais útil do que a nossa
+  const PREFER_SERVER_MESSAGE = new Set(["validation_error", "forbidden", "not_found", "invalid_state", "room_in_use", "reader_unavailable", "device_offline"]);
 
   // ============================================================
   // ERROS
   // ============================================================
 
-  // kind: "network" | "timeout" | "unavailable" | "unauthorized" | "forbidden" | "http" | "parse" | "aborted"
+  // kind: "network" | "cors" | "timeout" | "unavailable" | "unauthorized" | "forbidden" | "http" | "parse" | "aborted"
   class ApiError extends Error {
     constructor(message, { kind = "http", status = 0, code = null, data = null, endpoint = "" } = {}) {
       super(message);
@@ -131,8 +147,29 @@ const AdminApi = (() => {
     return { json: null, text };
   }
 
-  function messageFor(code, fallback) {
-    return (code && ERROR_MESSAGES[code]) || fallback;
+  function messageFor(code, serverMessage, fallback) {
+    if (serverMessage && (!code || PREFER_SERVER_MESSAGE.has(code) || !ERROR_MESSAGES[code])) return serverMessage;
+    return (code && ERROR_MESSAGES[code]) || serverMessage || fallback;
+  }
+
+  // fetch rejeitado: o servidor está mesmo inacessível, ou o navegador bloqueou por CORS?
+  // Um pedido "no-cors" não é bloqueado por CORS — se responder, o servidor está acessível.
+  async function diagnoseNetworkFailure(method, endpoint) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    try {
+      await fetch(CONFIG.baseUrl + ENDPOINTS.session, { mode: "no-cors", cache: "no-store", signal: controller.signal });
+      // O Node-RED responde às rotas inexistentes com um 404 sem cabeçalhos CORS,
+      // por isso o navegador não distingue "endpoint em falta" de "método não autorizado".
+      return new ApiError(
+        `O navegador bloqueou a resposta de ${endpoint}. Causa provável: o endpoint ainda não existe no Node-RED, ou o servidor não autoriza ${method} a partir de ${window.location.origin} (CORS).`,
+        { kind: "cors", endpoint }
+      );
+    } catch (_) {
+      return new ApiError("Sem ligação ao servidor de automação.", { kind: "network", endpoint });
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   // ============================================================
@@ -172,7 +209,7 @@ const AdminApi = (() => {
       if (reason === "aborted") {
         throw new ApiError("Pedido cancelado.", { kind: "aborted", endpoint });
       }
-      throw new ApiError("Sem ligação ao servidor de automação.", { kind: "network", endpoint });
+      throw await diagnoseNetworkFailure(method, endpoint);
     } finally {
       clearTimeout(timer);
       if (signal) signal.removeEventListener("abort", onExternalAbort);
@@ -187,10 +224,10 @@ const AdminApi = (() => {
 
     const { json, text } = await readBody(response);
     const code = json && typeof json.error === "string" ? json.error : null;
-    const serverMessage = json && (json.message || (code && ERROR_MESSAGES[code] ? null : code));
+    const serverMessage = json && typeof json.message === "string" && json.message ? json.message : null;
 
     if (response.status === 401) {
-      const error = new ApiError(messageFor(code, "Sessão inválida ou expirada."), { kind: "unauthorized", status: 401, code, data: json, endpoint });
+      const error = new ApiError(messageFor(code, null, "Sessão inválida ou expirada."), { kind: "unauthorized", status: 401, code, data: json, endpoint });
       if (unauthorizedHandler && path !== ENDPOINTS.login && path !== ENDPOINTS.session) {
         unauthorizedHandler(error);
       }
@@ -198,7 +235,7 @@ const AdminApi = (() => {
     }
 
     if (response.status === 403) {
-      throw new ApiError(messageFor(code, "Não tem permissão para esta operação."), { kind: "forbidden", status: 403, code, data: json, endpoint });
+      throw new ApiError(messageFor(code, serverMessage, "Não tem permissão para esta operação."), { kind: "forbidden", status: 403, code, data: json, endpoint });
     }
 
     // Node-RED devolve "Cannot GET /api/..." (HTML) quando o endpoint não existe.
@@ -208,11 +245,11 @@ const AdminApi = (() => {
     }
 
     if (!response.ok) {
-      throw new ApiError(messageFor(code, serverMessage || `Erro do servidor (${response.status}).`), { kind: "http", status: response.status, code, data: json || text, endpoint });
+      throw new ApiError(messageFor(code, serverMessage, `Erro do servidor (${response.status}).`), { kind: "http", status: response.status, code, data: json || text, endpoint });
     }
 
     if (json && json.success === false) {
-      throw new ApiError(messageFor(code, serverMessage || "O servidor recusou o pedido."), { kind: "http", status: response.status, code, data: json, endpoint });
+      throw new ApiError(messageFor(code, serverMessage, "O servidor recusou o pedido."), { kind: "http", status: response.status, code, data: json, endpoint });
     }
 
     if (json && typeof json.csrfToken === "string") setCsrfToken(json.csrfToken);
@@ -292,7 +329,15 @@ const AdminApi = (() => {
     listCards: (query, options) => get(ENDPOINTS.cards, query, options),
     updateCard: (id, payload) => patch(withId(ENDPOINTS.cards, id), payload),
     listRooms: (options) => get(ENDPOINTS.rooms, null, options),
-    listDevices: (options) => get(ENDPOINTS.devices, null, options),
+    createRoom: (payload) => post(ENDPOINTS.rooms, payload),
+    updateRoom: (id, payload) => patch(withId(ENDPOINTS.rooms, id), payload),
+    listDevices: (query, options) => get(ENDPOINTS.devices, query, options),
+    createDevice: (payload) => post(ENDPOINTS.devices, payload),
+    updateDevice: (id, payload) => patch(withId(ENDPOINTS.devices, id), payload),
+    // action: approve | reject | revoke | credentials
+    deviceAction: (id, action, payload) => post(`${withId(ENDPOINTS.devices, id)}/${encodeURIComponent(action)}`, payload, { dedupe: action !== "credentials" }),
+    deviceStatus: (id, options) => get(`${withId(ENDPOINTS.devices, id)}/status`, null, { retries: 0, ...options }),
+    listDeviceTypes: (options) => get(ENDPOINTS.deviceTypes, null, options),
     listPermissions: (query, options) => get(ENDPOINTS.permissions, query, options),
     updatePermission: (id, payload) => patch(withId(ENDPOINTS.permissions, id), payload),
 

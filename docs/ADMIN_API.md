@@ -1,305 +1,162 @@
-# Área administrativa — contrato da API (Node-RED)
+# Área administrativa — endpoints (Node-RED)
 
-Este documento descreve o que o frontend (`js/adminApi.js`) espera do backend
-Node-RED em `https://support.smartcitycaboverde.com`.
+Contrato entre o painel (`js/adminApi.js`) e o Node-RED em
+`https://support.smartcitycaboverde.com`. A implementação de referência está em
+[`backend/`](../backend/README.md): dois fluxos Node-RED importáveis e uma migração SQL.
 
-O frontend **nunca simula respostas**: se um endpoint não existir, a vista
-mostra «Funcionalidade indisponível» e o resto da interface continua a funcionar.
-Em **Definições → Verificar endpoints** é possível ver, no próprio painel, quais
-os endpoints GET já disponíveis.
+O painel **nunca simula respostas**. Se um endpoint faltar, a vista mostra
+«Funcionalidade indisponível» (ou o aviso de CORS, ver §2.4) e o resto continua a funcionar.
+**Definições → Verificar endpoints** lista, no próprio painel, os GET disponíveis.
 
-## 1. Estado verificado em 21/10/2026
+## 1. Estado em produção (verificado a 26/10/2026, só com pedidos GET/OPTIONS)
 
-| Endpoint | Estado |
+| Área | Estado |
 |---|---|
-| `GET /api/access/register/status` | **Existe.** Lê o parâmetro `?id=` (o frontend envia `id` e `registrationId`). Erros: `registration_id_required`, `registration_not_found`. |
-| `GET /api/admin/session`, `/api/access/dashboard`, `/users`, `/cards`, `/rooms`, `/devices`, `/permissions`, `/logs`, `/logs/export`, `/api/door/status` | **Em falta** (`Cannot GET …`). |
-| `POST /api/admin/login`, `/logout`, `/api/access/register/start`, `/register/cancel`, `/api/door/open`, `PATCH …` | Não verificado: não foram feitos pedidos de escrita em produção. |
-| CORS | Atualmente `Access-Control-Allow-Origin: *`, sem `Allow-Credentials`, sem `PATCH` e sem `X-CSRF-Token`. **Tem de ser alterado** (ver §2.3) para o login funcionar. |
+| `POST /api/admin/login`, `GET /api/admin/session`, `POST /api/admin/logout` | Existem (fluxo de login atual, não incluído no repositório). |
+| `GET /api/access/dashboard`, `/users`, `/cards`, `/devices`, `/rooms`, `/permissions`, `/logs` | Existem (fluxo v3). Respondem `401 session_expired` sem sessão. |
+| `PATCH` de `users`, `cards`, `permissions` | Definidos no fluxo v3, mas **bloqueados pelo navegador**: o CORS do Node-RED não autoriza `PATCH` (§2.3). |
+| Dispositivos IoT (criar/editar/aprovar/credenciais), salas (criar/editar), tipos | **Em falta** → Admin API v4. |
+| `register/start`, `register/status`, `register/cancel` | **Em falta** no servidor atual → Admin API v4. |
+| Protocolo ESP32 (`/api/device/register`, `/api/device/:id/command`, `/api/access/register/card`, `/api/access/card`, `/api/access/event`, `/api/health`) | **Em falta** no servidor atual (`Cannot GET …`). O firmware v2 aponta para este servidor → Dispositivos v2. |
+| `GET /api/access/logs/export` | Em falta → Admin API v4 (o painel gera o CSV no navegador enquanto não existir). |
+| `POST /api/door/open`, `GET /api/door/status` | **Em falta e fora do âmbito** (§7). |
 
 ## 2. Convenções
 
 ### 2.1 Formato
 
-* Pedidos e respostas em JSON (`Content-Type: application/json`).
-* Erro: código HTTP adequado + corpo `{ "success": false, "error": "<codigo>", "message": "<opcional>" }`.
-* Um `404` **com** JSON é tratado como «não encontrado»; um `404` sem JSON (página
-  padrão do Node-RED) é tratado como «endpoint inexistente».
-* Listas: `{ "items": [...], "total": 123, "page": 1, "pageSize": 10 }`.
-  O frontend também aceita a chave com o nome do recurso (`users`, `cards`, `logs`, …).
-* Datas em ISO 8601 UTC (`2026-10-21T09:12:00Z`). O frontend converte para o fuso do
-  escritório (predefinição `Atlantic/Cape_Verde`, configurável em Definições) e envia
-  `tz=` nos filtros para o backend interpretar datas/horas no mesmo fuso.
+* JSON. Erro: código HTTP + `{ "success": false, "error": "<codigo>", "message": "<texto>" }`.
+* Listas: `{ "<recurso>": [...], "total": 42, "page": 1, "pageSize": 10 }`.
+* Booleanos podem chegar como `0/1` (MySQL); o painel normaliza.
+* Datas: as do MySQL, convertidas pelo Node-RED para ISO 8601. Filtros de data/hora
+  são interpretados na hora do escritório (Cabo Verde, UTC−1; variável
+  `SMART_OFFICE_UTC_OFFSET_MINUTES`).
 
-Códigos de erro com mensagem própria na interface: `invalid_credentials`,
-`too_many_attempts`, `session_expired`, `csrf_invalid`, `forbidden`,
-`registration_id_required`, `registration_not_found`, `card_already_registered`,
-`device_offline`, `device_not_found`, `user_not_found`, `validation_error`.
+| HTTP | Significado | O painel mostra |
+|---|---|---|
+| 400 / 422 | dados inválidos (`validation_error`, `reader_unavailable`) | «Dados inválidos: …» com a mensagem do servidor |
+| 401 | sessão inexistente/expirada | volta ao login |
+| 403 | origem não autorizada / sem permissão | «Permissão insuficiente» |
+| 404 + JSON | registo inexistente (`device_not_found`, …) | «Não encontrado» |
+| 409 | conflito (`device_offline`, `device_disabled`, `card_already_registered`, `device_exists`, `room_in_use`, …) | mensagem específica |
+| 500 | `database_error` / `schema_outdated` | «Erro na base de dados» |
 
-### 2.2 Sessão e CSRF
+### 2.2 Sessão e proteção de escritas
 
-* `POST /api/admin/login` cria a sessão e devolve o cookie:
-  `Set-Cookie: so_admin=<id aleatório>; HttpOnly; Secure; SameSite=None; Path=/api; Max-Age=1800`
-  * `SameSite=None` é obrigatório enquanto o site (`*.vercel.app`) e a API
-    (`*.hostingersite.com`) estiverem em domínios diferentes. Se ambos passarem a
-    subdomínios do mesmo domínio (ex.: `painel.empresa.cv` e `api.empresa.cv`), usar `SameSite=Lax`/`Strict`.
-* A resposta do login e de `GET /api/admin/session` inclui `csrfToken`.
-  O frontend guarda-o **só em memória** e envia-o em `X-CSRF-Token` em todos os
-  pedidos `POST`/`PATCH`. O backend deve rejeitar com `403 csrf_invalid` se faltar ou não corresponder à sessão.
-* O backend deve também validar o cabeçalho `Origin` contra a lista de origens permitidas.
-* `401` em qualquer pedido → o painel volta ao ecrã de login («sessão expirou»).
-* `403` → mensagem «Não tem permissão».
+* Cookie `smart_office_admin` (64 hex, `HttpOnly`), criado pelo login atual. O Node-RED
+  guarda `SHA-256(token) → expiração` em `global.smartOfficeAdminSessions`.
+* O painel usa `credentials: "include"` em todos os pedidos e não guarda passwords nem
+  tokens em `localStorage`.
+* **CSRF:** as escritas só são aceites se o cabeçalho `Origin` estiver na lista
+  `SMART_OFFICE_ALLOWED_ORIGINS` (predefinição `https://smart-office-self.vercel.app`).
+  Se o login passar a devolver `csrfToken`, o painel envia-o em `X-CSRF-Token`.
 
-### 2.3 CORS (obrigatório)
+### 2.3 CORS — correção obrigatória no `server.js` da Hostinger
 
-Para cada pedido (incluindo `OPTIONS`):
-
-```
-Access-Control-Allow-Origin: https://<projeto>.vercel.app      ← origem exata, nunca "*"
-Access-Control-Allow-Credentials: true
-Access-Control-Allow-Methods: GET, POST, PATCH, OPTIONS
-Access-Control-Allow-Headers: Content-Type, X-CSRF-Token
-Access-Control-Expose-Headers: Content-Disposition, X-CSRF-Token
-Vary: Origin
+```js
+httpNodeCors: {
+  origin: "https://smart-office-self.vercel.app",
+  methods: "GET,PUT,POST,PATCH,DELETE,OPTIONS",   // ← falta PATCH hoje
+  allowedHeaders: "Content-Type,Authorization,X-CSRF-Token",
+  credentials: true,
+  optionsSuccessStatus: 204
+},
+functionGlobalContext: { crypto: require("crypto") },  // usado pelos fluxos
 ```
 
-Manter uma lista explícita de origens (domínio de produção Vercel + `http://localhost:*`
-apenas em desenvolvimento) e devolver a origem do pedido só se estiver na lista.
-Os endpoints usados pelo ESP32 não precisam de CORS.
-
-## 3. Administração
-
-### `POST /api/admin/login`
-
-```json
-{ "username": "DevTeam", "password": "…" }
-```
-
-Resposta `200`:
-
-```json
-{
-  "success": true,
-  "authenticated": true,
-  "admin": { "username": "DevTeam", "displayName": "DevTeam", "permissions": ["door.open", "users.write"] },
-  "csrfToken": "…"
-}
-```
-
-Erros: `401 invalid_credentials`, `429 too_many_attempts`.
-Requisitos: password guardada com **argon2id** ou **bcrypt (custo ≥ 12)**; comparação
-em tempo constante; limitar tentativas por IP e por utilizador; registar na auditoria.
-
-### `GET /api/admin/session`
-
-`200 { "authenticated": true, "admin": {…}, "csrfToken": "…" }` ou `401 session_expired`.
-
-### `POST /api/admin/logout`
-
-Invalida a sessão no servidor e apaga o cookie (`Max-Age=0`). `200 { "success": true }`.
-
-### Permissões
-
-Se `admin.permissions` vier preenchido, o botão «Abrir porta» só fica ativo com
-`door.open` (ou `*`). Se não vier, a interface não esconde nada e o backend decide.
-**O backend tem sempre de validar as permissões**; o frontend só ajusta a apresentação.
-
-### Administrador inicial `DevTeam`
-
-A palavra-passe **não** está no repositório nem no frontend. Sugestão de configuração única:
-
-1. Definir no Node-RED (Hostinger) a variável de ambiente `ADMIN_BOOTSTRAP_PASSWORD`.
-2. Um fluxo de arranque verifica se a tabela `admins` está vazia; se estiver, cria
-   `DevTeam` com `argon2id(ADMIN_BOOTSTRAP_PASSWORD)` e regista o evento na auditoria.
-3. Remover a variável de ambiente após o primeiro arranque e alterar a palavra-passe.
-
-## 4. Registo RFID
-
-### `POST /api/access/register/start`
-
-```json
-{
-  "name": "Utilizador Exemplo",
-  "contact": "9000000",
-  "userId": 12,
-  "deviceId": "esp32-door-01",
-  "readerId": "outside",
-  "doorId": "main-door",
-  "permissions": { "canEnter": true, "canExit": true },
-  "schedule": { "from": "08:00", "to": "18:00", "tz": "Atlantic/Cape_Verde" },
-  "active": true
-}
-```
-
-* `userId` só existe quando se associa um cartão a um utilizador existente.
-* `schedule` é `null` quando não há restrição de horário.
-
-Resposta: `200 { "success": true, "registrationId": "…", "status": "waiting", "expiresAt": "…" }`.
-Erros: `409 device_offline`, `404 device_not_found`, `400 validation_error`.
-
-### `GET /api/access/register/status?id=…&registrationId=…`
-
-```json
-{ "success": true, "registrationId": "…", "status": "completed", "uid": "04F3A9C2", "user": { "id": 31, "name": "Utilizador Exemplo" } }
-```
-
-`status`: `waiting` → `card_received` → `saving` → `completed`, ou um estado final
-`duplicate` (incluir `ownerName`), `expired`, `device_offline`, `cancelled`, `error`.
-
-**`completed` só pode ser devolvido depois do `COMMIT` da transação MySQL.**
-O frontend nunca mostra «Registo concluído» sem este estado.
-
-### `POST /api/access/register/cancel`
-
-`{ "registrationId": "…" }` → `200 { "success": true, "status": "cancelled" }`.
-Se este endpoint não existir, o frontend avisa que o registo continua ativo até expirar e continua a acompanhar o estado.
-
-## 5. Gestão
-
-### `GET /api/access/users?q=&status=active|inactive&page=1&pageSize=10`
-
-Item: `{ "id", "name", "contact", "cardCount", "rooms": ["Principal"], "active", "createdAt" }`
-
-### `POST /api/access/users`
-
-Cria um utilizador sem cartão (`{ name, contact, active }`). O fluxo normal de criação é o registo RFID (§4).
-
-### `PATCH /api/access/users/:id`
-
-Campos aceites: `name`, `contact`, `active`, `revokeCards` (revoga todos os cartões).
-Resposta: `{ "success": true, "user": {…} }`. Registar na auditoria (admin da sessão, antes/depois).
-
-### `GET /api/access/cards?uid=&user=&userId=&status=&page=&pageSize=`
-
-Item: `{ "id", "uid", "userId", "userName", "status": "active|suspended|revoked|lost", "permissions": ["Principal"], "createdAt", "lastUsedAt" }`
-
-### `PATCH /api/access/cards/:id`
-
-`{ "status": "revoked" }`. Transferir um cartão entre utilizadores exige `{ "userId": <novo>, "transfer": true }` explícito; sem isso devolver `409 card_already_registered`.
-
-### `GET /api/access/rooms`
-
-`{ "rooms": [{ "id": "main-door", "name": "Principal", "doorId": "main-door" }] }`
-
-### `GET /api/access/devices`
-
-```json
-{ "devices": [{
-  "deviceId": "esp32-door-01", "name": "Porta principal",
-  "roomId": "main-door", "roomName": "Principal",
-  "online": true, "lastSeen": "2026-10-21T09:12:00Z",
-  "readers": ["outside", "inside"],
-  "relayState": "off",
-  "doorState": null,
-  "origin": "remote"
-}] }
-```
-
-`doorState`: `null` sem sensor; `"open"`/`"closed"` com sensor. Se `online` não vier, o
-frontend considera online quando `lastSeen` tem menos de 90 s.
-
-### `GET /api/access/permissions?userId=…`
-
-`{ "permissions": [{ "id", "userId", "roomId", "roomName", "canEnter", "canExit", "schedule": { "from", "to" } }] }`
-
-### `PATCH /api/access/permissions/:userId`
-
-Upsert por (utilizador, sala): `{ "roomId": "meeting", "canEnter": true, "canExit": false }`.
-
-## 6. Histórico e dashboard
-
-### `GET /api/access/dashboard?tz=…`
-
-```json
-{ "activeUsers": 24, "entriesToday": 58, "exitsToday": 43, "deniedToday": 3, "recent": [ /* eventos, ver abaixo */ ] }
-```
-
-«Hoje» calculado no fuso `tz`. Se `recent` faltar, o frontend usa `GET /api/access/logs?pageSize=8`.
-
-### `GET /api/access/logs`
-
-Parâmetros (todos opcionais e combináveis):
-`q` (nome), `userId`, `roomId`, `deviceId`, `readerId` (`outside|inside`),
-`direction` (`in|out`), `result` (`allowed|denied`), `dateFrom`, `dateTo` (`YYYY-MM-DD`),
-`timeFrom`, `timeTo` (`HH:MM`), `tz`, `sort=timestamp`, `order` (`asc|desc`), `page`, `pageSize` (≤ 200).
-
-Evento:
-
-```json
-{
-  "id": 981, "timestamp": "2026-10-21T09:12:00Z",
-  "userName": "Ana Silva", "uid": "04A1B201",
-  "roomId": "main-door", "roomName": "Principal",
-  "deviceId": "esp32-door-01", "readerId": "outside",
-  "direction": "in", "result": "allowed", "reason": null,
-  "passageConfirmed": false
-}
-```
-
-`passageConfirmed` só é `true` quando um sensor físico confirma a passagem. Sem isso,
-a interface mostra «Entrada · autorizada · sem sensor», e não uma entrada confirmada.
-
-### `GET /api/access/logs/export`
-
-Mesmos filtros (sem paginação). Responde `text/csv; charset=utf-8` com
-`Content-Disposition: attachment`. Se não existir, o frontend gera o CSV no
-navegador a partir das páginas reais de `/api/access/logs` (máx. 10 000 linhas).
-
-## 7. Controlo remoto da porta
-
-### `POST /api/door/open`
-
-`{ "deviceId": "esp32-door-01", "duration": 4000 }`. O administrador é identificado
-**pela sessão**; qualquer campo `requestedBy` enviado pelo navegador deve ser ignorado/rejeitado.
-Validar a permissão `door.open`, limitar `duration` (ex.: 1000–10000 ms) e registar na auditoria.
-
-Resposta: `202 { "success": true, "commandId": "…", "status": "queued" }`. Erro: `409 device_offline`.
-
-### `GET /api/door/status?commandId=…&deviceId=…`
-
-`{ "status": "queued|accepted|executed|failed|timeout|offline", "doorState": null }`
-
-* `accepted`: o ESP32 levantou o comando em `/api/device/command`.
-* `executed`: o ESP32 confirmou em `POST /api/door/ack`.
-* A interface mostra «Comando de abertura executado» e só mostra «Porta aberta» se `doorState === "open"` (sensor físico).
-
-## 8. Protocolo do dispositivo (ESP32) — não usado pelo frontend
-
-`POST /api/access/card`, `POST /api/access/register/card`,
-`GET /api/device/command?deviceId=…` (devolve `REGISTER_CARD` com `registrationId`,
-ou `OPEN_DOOR` com `commandId`/`duration`), `POST /api/door/ack`, `POST /api/door/state`.
-Devem autenticar o dispositivo (ex.: token por dispositivo em cabeçalho, guardado no ESP32 e no servidor, nunca no frontend).
-
-Nota: o UID do cartão é um identificador, não uma credencial segura; pode ser clonado.
-Para portas sensíveis considerar cartões com autenticação criptográfica (ex.: DESFire EV2/EV3).
-
-## 9. Esquema MySQL sugerido
-
-```sql
-CREATE TABLE admins (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(64) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL, permissions JSON NOT NULL, active TINYINT(1) DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE admin_sessions (id CHAR(64) PRIMARY KEY, admin_id INT NOT NULL, csrf_token CHAR(64) NOT NULL,
-  expires_at DATETIME NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (admin_id) REFERENCES admins(id));
-CREATE TABLE access_users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(80) NOT NULL, contact VARCHAR(40),
-  active TINYINT(1) DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE rooms (id VARCHAR(64) PRIMARY KEY, name VARCHAR(80) NOT NULL);
-CREATE TABLE devices (id VARCHAR(64) PRIMARY KEY, name VARCHAR(80), room_id VARCHAR(64), readers JSON,
-  last_seen DATETIME, relay_state VARCHAR(16), door_state VARCHAR(16) NULL, origin VARCHAR(16),
-  FOREIGN KEY (room_id) REFERENCES rooms(id));
-CREATE TABLE cards (id INT AUTO_INCREMENT PRIMARY KEY, uid VARCHAR(32) NOT NULL UNIQUE, user_id INT NOT NULL,
-  status ENUM('active','suspended','revoked','lost') DEFAULT 'active', created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  last_used_at DATETIME NULL, FOREIGN KEY (user_id) REFERENCES access_users(id));
-CREATE TABLE permissions (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, room_id VARCHAR(64) NOT NULL,
-  can_enter TINYINT(1) DEFAULT 0, can_exit TINYINT(1) DEFAULT 0, schedule_from TIME NULL, schedule_to TIME NULL,
-  UNIQUE KEY (user_id, room_id));
-CREATE TABLE access_logs (id BIGINT AUTO_INCREMENT PRIMARY KEY, ts DATETIME(3) NOT NULL, uid VARCHAR(32),
-  user_id INT NULL, room_id VARCHAR(64), device_id VARCHAR(64), reader_id VARCHAR(16), direction ENUM('in','out'),
-  result ENUM('allowed','denied'), reason VARCHAR(120), passage_confirmed TINYINT(1) DEFAULT 0,
-  INDEX (ts), INDEX (user_id, ts), INDEX (room_id, ts));
-CREATE TABLE audit_log (id BIGINT AUTO_INCREMENT PRIMARY KEY, ts DATETIME(3) NOT NULL, admin_id INT, action VARCHAR(64),
-  target VARCHAR(64), details JSON, ip VARCHAR(45));
-```
-
-`cards.uid UNIQUE` impede que o mesmo cartão fique associado a dois utilizadores.
-O registo (§4) deve inserir utilizador, cartão e permissões numa única transação.
+Reiniciar o Node-RED depois de alterar.
+
+### 2.4 Endpoints inexistentes aparecem como CORS no navegador
+
+O Node-RED responde a rotas inexistentes com um `404` **sem** cabeçalhos CORS. O navegador
+não deixa ler essa resposta, por isso o painel mostra «Pedido bloqueado (CORS)» com as duas
+causas possíveis (endpoint em falta ou método não autorizado). Para confirmar qual é:
+`curl -i -H "Origin: https://smart-office-self.vercel.app" https://support.smartcitycaboverde.com/<rota>`.
+
+## 3. Admin API v4 (painel, requer sessão)
+
+`backend/node-red/smart-office-admin-api-v4.json`
+
+| Método | Rota | Corpo / parâmetros | Resposta |
+|---|---|---|---|
+| GET | `/api/access/dashboard` | — | `stats{activeUsers, entriesToday, exitsToday, deniedToday, devicesOnline, devicesOffline, devicesPending, doorsCount}`, `recent[]`, `recentCards[]` |
+| GET | `/api/access/users` | `q, status, id, page, pageSize` | `users[], total` |
+| POST | `/api/access/users` | `name, contact, email, active` | `201 user{id}` |
+| PATCH | `/api/access/users/:id` | `name, contact, email, active, revokeCards` | `updated` |
+| GET | `/api/access/cards` | `uid, user, userId, status, page, pageSize` | `cards[]` (com `lastUsedAt`), `total` |
+| PATCH | `/api/access/cards/:id` | `status: active\|revoked` | `updated` |
+| GET | `/api/access/permissions` | `userId` | `permissions[]` agrupadas por sala |
+| PATCH | `/api/access/permissions/:userId` | `roomId, canEnter, canExit` | cria nos cartões em falta e atualiza todos |
+| GET | `/api/access/rooms` | — | `rooms[]` com `deviceCount` |
+| POST | `/api/access/rooms` | `id, name, description` | `201`; `409 room_exists` |
+| PATCH | `/api/access/rooms/:id` | `name, description, newId` | `409 room_in_use` se mudar o ID de uma sala usada |
+| GET | `/api/access/device-types` | — | `types[]{id, label, rfidCapable, configSchema[]}` |
+| GET | `/api/access/devices` | `q, type, status, connection, roomId, rfid=1` | `devices[]` (ver abaixo) |
+| POST | `/api/access/devices` | `deviceId, name, type, roomId, hardwareId, description, active, readers[], config{}` | `201 device`; `409 device_exists` |
+| PATCH | `/api/access/devices/:id` | mesmos campos (exceto `deviceId`) | `device` atualizado; `409 device_not_approved` ao ativar um pendente |
+| POST | `/api/access/devices/:id/approve` · `reject` · `revoke` | — | `device` atualizado |
+| POST | `/api/access/devices/:id/credentials` | — | `device`, `credential{deviceKey, header}` — **a chave só é devolvida uma vez** |
+| GET | `/api/access/devices/:id/status` | — | `online, secondsSinceSeen, message` (teste de comunicação) |
+| GET | `/api/access/logs` | `q, userId, roomId, deviceId, readerId, direction, result, dateFrom, dateTo, timeFrom, timeTo, order, page, pageSize` | `logs[], total` |
+| GET | `/api/access/logs/export` | mesmos filtros | `text/csv` (máx. 10 000 linhas) |
+| POST | `/api/access/register/start` | `name, contact, userId?, deviceId, readerId, doorId, permissions{canEnter,canExit}, schedule{from,to}\|null, active` | `201 registrationId, expiresAt` |
+| GET | `/api/access/register/status` | `id` (ou `registrationId`) | `status, uid, name, deviceName, roomName, deviceOnline, ownerName, errorCode` |
+| POST | `/api/access/register/cancel` | `registrationId` | `cancelled`; `409 registration_not_cancellable` + `status` real |
+
+Dispositivo: `id` (numérico, usado nos PATCH), `deviceId`, `name`, `type`, `typeLabel`,
+`rfidCapable`, `roomId`, `roomName`, `approvalStatus` (`pending|approved|rejected|revoked`),
+`active`, `online`, `secondsSinceSeen`, `lastSeen`, `readers[]`, `ipAddress`,
+`firmwareVersion`, `wifiRssi`, `hardwareId`, `hasCredential`, `config`.
+
+* **Ativo/Inativo** = decisão do administrador. **Online/Offline** = heartbeat nos últimos 90 s.
+* Erros de `register/start`, verificados antes de criar o pedido: `device_not_found` (404),
+  `device_not_approved`, `device_disabled`, `device_offline` (409), `reader_unavailable`
+  (422, sem leitor RFID ou leitor não instalado), `room_not_found`, `user_not_found` (404).
+* Estados de `register/status`: `waiting_card` → `completed`, ou `duplicate`, `expired`,
+  `cancelled` (`errorCode: superseded` se outro registo o substituiu), `error`
+  (`errorCode: device_disabled | database_error | user_not_found | door_not_defined`).
+  `completed` só existe depois do `COMMIT` no MySQL.
+
+Todas as escritas ficam em `access_admin_audit`.
+
+## 4. Dispositivos v2 (ESP32, sem sessão)
+
+`backend/node-red/smart-office-device-api-v2.json`. Contrato igual ao do firmware
+`SmartOffice_ESP32_RC522_v2`: o firmware não precisa de alterações.
+
+| Método | Rota | Notas |
+|---|---|---|
+| POST | `/api/device/register` | Heartbeat a cada 60 s. Dispositivo desconhecido → criado como **pendente**. Nunca reativa nem renomeia (antes forçava `active=1`). MAC diferente → `409 hardware_mismatch`. |
+| GET | `/api/device/:deviceId/command` | Polling a cada 2 s; devolve `REGISTER_CARD` só a dispositivos aprovados e ativos. Atualiza o heartbeat no máximo a cada 20 s. |
+| POST | `/api/access/register/card` | Chama `register_access_card` (migração). |
+| POST | `/api/access/card` | Decisão de acesso: aprovação, estado, permissão e **janela horária**. |
+| POST | `/api/access/event` | Grava `user_id`/`card_id` (antes ficavam vazios → «Cartão desconhecido»). Reenvio do mesmo `eventId` → 200. |
+| GET | `/api/health` | — |
+
+**Credencial do dispositivo:** se o painel gerou uma credencial, o ESP32 tem de enviar
+`X-Device-Key` (o firmware já o faz com `DEVICE_API_KEY`). Sem credencial, o dispositivo
+continua a funcionar (transição), e o painel mostra «Sem credencial».
+
+## 5. Base de dados
+
+`backend/sql/001_device_management.sql`, idempotente:
+
+* novas tabelas `access_device_types` (10 tipos), `access_rooms` (preenchida a partir dos `door_id` existentes) e `access_admin_audit`;
+* novas colunas em `access_devices` (tipo, aprovação, leitores, configuração, credencial), em `access_registration_requests` (sala, permissões, horário, utilizador existente) e em `access_permissions` (`time_from`, `time_to`);
+* `register_access_card` substituído (mesma assinatura): usa os dados do formulário e marca `duplicate`/`expired`/`error` para o painel ver.
+
+Os dispositivos existentes ficam `approved` e ativos, por isso nada deixa de funcionar.
+
+## 6. Ainda indisponível
+
+| Funcionalidade | Porquê | O painel |
+|---|---|---|
+| Abrir porta remotamente (`POST /api/door/open`, `GET /api/door/status`) | O firmware v2 ignora deliberadamente `OPEN_DOOR`. É preciso um comando autenticado no firmware e no fluxo. | Pede confirmação e depois mostra «Abertura remota indisponível — nenhum comando foi confirmado». |
+| Teste de comunicação ativo (ping) | O firmware não responde a comandos de teste | «Testar comunicação» lê o último heartbeat |
+| Permissões administrativas por utilizador admin | O login atual não devolve `permissions` | O painel não esconde nada; o backend decide |
+
+## 7. Notas de segurança
+
+* O UID de um cartão RC522/PN532 pode ser copiado. Para portas sensíveis, usar cartões com autenticação criptográfica (ex.: DESFire EV2/EV3).
+* As credenciais de dispositivo são geradas no servidor (`crypto.randomBytes`), guardadas apenas como SHA-256 e mostradas uma única vez. O painel nunca as gera.
+* O frontend nunca fala com o ESP32: painel → Node-RED → MySQL/ESP32.

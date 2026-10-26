@@ -13,8 +13,10 @@ js/dataProvider.js    ← Luz, A.C., Tomada, Timer (Node-RED local) e Clima (Ope
 js/app.js             ← painel, screensaver, temporizadores, navegação
 js/adminApi.js        ← configuração central da API admin + pedidos HTTP (timeout, retry, CSRF)
 js/adminAuth.js       ← sessão admin (cookie HttpOnly) e bloqueio por inatividade
-js/admin.js           ← vistas: Dashboard, Utilizadores, Acessos RFID, Cartões, Salas e portas, Histórico, Definições
-docs/ADMIN_API.md     ← contrato dos endpoints que o Node-RED tem de implementar
+js/admin.js           ← vistas: Dashboard, Utilizadores, Acessos RFID, Cartões, Salas e portas,
+                        Dispositivos IoT, Permissões, Histórico, Definições
+docs/ADMIN_API.md     ← endpoints usados, estado em produção e o que falta
+backend/              ← fluxos Node-RED, migração MySQL e bancada de testes (não publicado na Vercel)
 ```
 
 ## Área administrativa
@@ -27,6 +29,12 @@ docs/ADMIN_API.md     ← contrato dos endpoints que o Node-RED tem de implement
 * Quando o screensaver do kiosk é ativado, a sessão admin é terminada no servidor.
   Ao desbloquear, é preciso voltar a fazer login.
 * Endpoints em falta mostram «Funcionalidade indisponível»; nada é simulado.
+* **Dispositivos IoT:** adicionar, aprovar pendentes, ativar/desativar, testar comunicação,
+  gerar/revogar credenciais. «Ativo» é configuração; «Online» é o heartbeat real (90 s).
+* **Acessos RFID:** lista automaticamente os leitores aprovados e ativos; o resultado só
+  aparece depois da confirmação do MySQL.
+
+Instalação do backend (migração SQL, CORS com PATCH, fluxos): [backend/README.md](backend/README.md).
 
 Ver [docs/ADMIN_API.md](docs/ADMIN_API.md) para o contrato completo, os requisitos de CORS/cookies e o esquema MySQL.
 
