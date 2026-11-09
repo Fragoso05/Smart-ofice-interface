@@ -294,6 +294,7 @@ const AdminApi = (() => {
   const get = (path, query, options = {}) => request("GET", path, { ...options, query });
   const post = (path, body, options = {}) => request("POST", path, { ...options, body: body ?? {} });
   const patch = (path, body, options = {}) => request("PATCH", path, { ...options, body: body ?? {} });
+  const del = (path, options = {}) => request("DELETE", path, options);
 
   function withId(base, id) {
     return `${base}/${encodeURIComponent(id)}`;
@@ -326,6 +327,7 @@ const AdminApi = (() => {
     listUsers: (query, options) => get(ENDPOINTS.users, query, options),
     createUser: (payload) => post(ENDPOINTS.users, payload),
     updateUser: (id, payload) => patch(withId(ENDPOINTS.users, id), payload),
+    deleteUser: (id) => del(withId(ENDPOINTS.users, id)),
     listCards: (query, options) => get(ENDPOINTS.cards, query, options),
     updateCard: (id, payload) => patch(withId(ENDPOINTS.cards, id), payload),
     listRooms: (options) => get(ENDPOINTS.rooms, null, options),
@@ -334,6 +336,7 @@ const AdminApi = (() => {
     listDevices: (query, options) => get(ENDPOINTS.devices, query, options),
     createDevice: (payload) => post(ENDPOINTS.devices, payload),
     updateDevice: (id, payload) => patch(withId(ENDPOINTS.devices, id), payload),
+    deleteDevice: (id) => del(withId(ENDPOINTS.devices, id)),
     // action: approve | reject | revoke | credentials
     deviceAction: (id, action, payload) => post(`${withId(ENDPOINTS.devices, id)}/${encodeURIComponent(action)}`, payload, { dedupe: action !== "credentials" }),
     deviceStatus: (id, options) => get(`${withId(ENDPOINTS.devices, id)}/status`, null, { retries: 0, ...options }),

@@ -53,6 +53,9 @@ const AdminApp = (() => {
     power: svg(`<path d="M12 3v9"/><path d="M6.4 6.4a8 8 0 1 0 11.2 0"/>`),
     pulse: svg(`<path d="M3 12h4l3-8 4 16 3-8h4"/>`),
     link: svg(`<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>`),
+    trash: svg(`<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/><path d="M10 11v6M14 11v6"/>`),
+    sun: svg(`<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>`),
+    moon: svg(`<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>`),
   };
 
   const VIEWS = [
@@ -670,7 +673,7 @@ const AdminApp = (() => {
           <table class="adm-table adm-table--click">
             <thead><tr>
               <th>ID</th><th>Nome</th><th class="adm-hide-sm">Contacto</th><th>Cartões</th>
-              <th>Salas</th><th>Estado</th><th class="adm-hide-sm">Registo</th>
+              <th>Salas</th><th>Estado</th><th class="adm-hide-sm">Registo</th><th></th>
             </tr></thead>
             <tbody>
               ${users.map((u, i) => `
@@ -682,6 +685,7 @@ const AdminApp = (() => {
                   <td>${esc(u.rooms.join(", ") || "—")}</td>
                   <td>${statusPill(u.active)}</td>
                   <td class="adm-hide-sm">${esc(fmtDate(u.createdAt))}</td>
+                  <td class="adm-td-actions">${deleteIconHtml(i, "Eliminar utilizador")}</td>
                 </tr>`).join("")}
             </tbody>
           </table>
@@ -690,6 +694,15 @@ const AdminApp = (() => {
 
       slot.querySelectorAll("tr[data-index]").forEach((row) => {
         row.addEventListener("click", () => go("userDetail", { user: users[Number(row.dataset.index)] }));
+      });
+
+      slot.querySelectorAll("[data-delete]").forEach((btn) => {
+        btn.addEventListener("click", async (event) => {
+          event.stopPropagation(); // a linha abre o detalhe
+          if (!(await deleteUser(users[Number(btn.dataset.delete)], btn))) return;
+          if (users.length === 1 && state.page > 1) state.page -= 1;
+          load();
+        });
       });
     }
 
@@ -731,6 +744,7 @@ const AdminApp = (() => {
           <div class="adm-form__actions adm-form__actions--split">
             <button type="button" class="adm-btn adm-btn--ghost" data-action="toggle">${user.active ? "Desativar utilizador" : "Ativar utilizador"}</button>
             <button type="button" class="adm-btn adm-btn--danger" data-action="revoke">Revogar acesso</button>
+            <button type="button" class="adm-btn adm-btn--danger" data-action="delete">${ICON.trash}Eliminar utilizador</button>
           </div>
         </section>
 
@@ -828,6 +842,10 @@ const AdminApp = (() => {
           toast(errorText(error), "error");
         }
       });
+    });
+
+    $('[data-action="delete"]').addEventListener("click", async (event) => {
+      if (await deleteUser(user, event.currentTarget)) go("users");
     });
 
     // --- Cartões
@@ -1015,6 +1033,43 @@ const AdminApp = (() => {
         return false;
       }
     });
+  }
+
+  function deleteIconHtml(index, label) {
+    return `<button type="button" class="adm-btn adm-btn--danger adm-btn--sm adm-btn--icon" data-delete="${index}" title="${label}" aria-label="${label}">${ICON.trash}</button>`;
+  }
+
+  // Confirma e executa a eliminação; devolve true só depois de o servidor a confirmar
+  async function confirmDelete(button, dialog, remove, doneMessage) {
+    if (!(await confirmDialog({ ...dialog, confirmLabel: "Eliminar", danger: true }))) return false;
+    return withBusy(button, "A eliminar…", async () => {
+      try {
+        await remove();
+        toast(doneMessage, "ok");
+        return true;
+      } catch (error) {
+        toast(errorText(error), "error");
+        return false;
+      }
+    });
+  }
+
+  function deleteUser(user, button) {
+    return confirmDelete(button, {
+      title: "Eliminar utilizador",
+      message: "Apaga definitivamente o utilizador, os seus cartões e permissões; não pode ser anulado. Os acessos passados ficam no histórico, mas sem nome («Cartão desconhecido»). Para bloquear temporariamente, use «Desativar».",
+      details: [["Utilizador", user.name], ["Cartões", String(user.cardCount)]],
+    }, () => AdminApi.deleteUser(user.id), "Utilizador eliminado.");
+  }
+
+  async function deleteDevice(device, button) {
+    const deleted = await confirmDelete(button, {
+      title: "Eliminar dispositivo",
+      message: "Apaga definitivamente o dispositivo e a sua credencial; o histórico de acessos mantém-se. Se continuar ligado, volta a anunciar-se e aparece como pendente, sem credencial.",
+      details: [["Dispositivo", `${device.name} (${device.id})`], ["Sala/porta", device.roomName || "—"], ["Ligação", device.online ? "Online" : "Offline"]],
+    }, () => AdminApi.deleteDevice(device.dbId), "Dispositivo eliminado.");
+    if (deleted) invalidateRefData();
+    return deleted;
   }
 
   // ============================================================
@@ -2006,6 +2061,7 @@ const AdminApp = (() => {
                         ? `<button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" data-act="${d.active ? "deactivate" : "activate"}" data-i="${i}">${ICON.power}${d.active ? "Desativar" : "Ativar"}</button>`
                         : ""}
                     <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" data-detail="${i}">Gerir</button>
+                    ${deleteIconHtml(i, "Eliminar dispositivo")}
                   </td>
                 </tr>`).join("")}
             </tbody>
@@ -2063,6 +2119,11 @@ const AdminApp = (() => {
     slot.addEventListener("click", async (event) => {
       const detail = event.target.closest("[data-detail]");
       if (detail) return go("deviceDetail", { device: shown[Number(detail.dataset.detail)] });
+      const del = event.target.closest("[data-delete]");
+      if (del) {
+        if (!del.disabled && await deleteDevice(shown[Number(del.dataset.delete)], del)) load();
+        return;
+      }
       const btn = event.target.closest("[data-act]");
       if (!btn || btn.disabled) return;
       const updated = await deviceQuickAction(shown[Number(btn.dataset.i)], btn.dataset.act, btn);
@@ -2297,6 +2358,7 @@ const AdminApp = (() => {
       }
       a.push(`<button type="button" class="adm-btn adm-btn--ghost" data-do="test">${ICON.pulse}Testar comunicação</button>`);
       if (device.approvalStatus !== "revoked") a.push(`<button type="button" class="adm-btn adm-btn--danger" data-do="revoke">Revogar dispositivo</button>`);
+      a.push(`<button type="button" class="adm-btn adm-btn--danger" data-do="delete">${ICON.trash}Eliminar dispositivo</button>`);
       $('[data-slot="actions"]').innerHTML = a.join("");
     }
 
@@ -2353,6 +2415,10 @@ const AdminApp = (() => {
       const action = btn.dataset.do;
       resultSlot.innerHTML = "";
       if (action === "edit") return go("deviceForm", { device });
+      if (action === "delete") {
+        if (await deleteDevice(device, btn)) go("devices");
+        return;
+      }
       if (action === "test") {
         await withBusy(btn, "A testar…", async () => {
           try {
@@ -2676,7 +2742,7 @@ const AdminApp = (() => {
       if (ctx.signal.aborted) return;
       probeSlot.innerHTML = `<ul class="adm-list">${results.map(([m, p, tone, label]) => `
         <li class="adm-list__item"><span class="adm-mono">${m} ${esc(p)}</span><span class="adm-pill adm-pill--${tone}">${esc(label)}</span></li>`).join("")}</ul>
-        <p class="adm-hint">Endpoints POST/PATCH não são testados automaticamente para não provocar alterações.</p>`;
+        <p class="adm-hint">Endpoints POST/PATCH/DELETE não são testados automaticamente para não provocar alterações.</p>`;
     }));
   }
 
@@ -2855,6 +2921,19 @@ const AdminApp = (() => {
   }
 
   // ============================================================
+  // TEMA (claro/escuro), guardado nas preferências deste navegador
+  // ============================================================
+
+  function applyTheme(theme) {
+    const light = theme === "light";
+    const label = `Mudar para tema ${light ? "escuro" : "claro"}`;
+    els.root.dataset.theme = light ? "light" : "dark";
+    els.theme.innerHTML = light ? ICON.moon : ICON.sun;
+    els.theme.title = label;
+    els.theme.setAttribute("aria-label", label);
+  }
+
+  // ============================================================
   // INICIALIZAÇÃO
   // ============================================================
 
@@ -2875,9 +2954,17 @@ const AdminApp = (() => {
       dialog: document.getElementById("admin-dialog"),
       dialogCard: document.getElementById("admin-dialog-card"),
       toast: document.getElementById("admin-toast"),
+      theme: document.getElementById("admin-theme"),
     };
 
     els.root.querySelectorAll("[data-icon]").forEach((el) => (el.innerHTML = ICON[el.dataset.icon] || ""));
+
+    applyTheme(AdminAuth.loadPrefs().theme);
+    els.theme.addEventListener("click", () => {
+      const next = els.root.dataset.theme === "light" ? "dark" : "light";
+      AdminAuth.savePrefs({ theme: next });
+      applyTheme(next);
+    });
 
     els.nav.innerHTML = VIEWS.map((v) => `
       <button type="button" class="adm-nav__item" data-view="${v.id}" title="${esc(v.label)}">${ICON[v.icon]}<span>${esc(v.label)}</span></button>`).join("");

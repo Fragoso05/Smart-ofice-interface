@@ -83,6 +83,7 @@ causas possíveis (endpoint em falta ou método não autorizado). Para confirmar
 | GET | `/api/access/users` | `q, status, id, page, pageSize` | `users[], total` |
 | POST | `/api/access/users` | `name, contact, email, active` | `201 user{id}` |
 | PATCH | `/api/access/users/:id` | `name, contact, email, active, revokeCards` | `updated` |
+| DELETE | `/api/access/users/:id` | — | `deleted`; apaga também cartões e permissões. O histórico mantém-se, sem nome associado |
 | GET | `/api/access/cards` | `uid, user, userId, status, page, pageSize` | `cards[]` (com `lastUsedAt`), `total` |
 | PATCH | `/api/access/cards/:id` | `status: active\|revoked` | `updated` |
 | GET | `/api/access/permissions` | `userId` | `permissions[]` agrupadas por sala |
@@ -94,6 +95,7 @@ causas possíveis (endpoint em falta ou método não autorizado). Para confirmar
 | GET | `/api/access/devices` | `q, type, status, connection, roomId, rfid=1` | `devices[]` (ver abaixo) |
 | POST | `/api/access/devices` | `deviceId, name, type, roomId, hardwareId, description, active, readers[], config{}` | `201 device`; `409 device_exists` |
 | PATCH | `/api/access/devices/:id` | mesmos campos (exceto `deviceId`) | `device` atualizado; `409 device_not_approved` ao ativar um pendente |
+| DELETE | `/api/access/devices/:id` | — | `deleted`; o histórico mantém-se. Um ESP32 ainda ligado volta a aparecer como pendente, sem credencial |
 | POST | `/api/access/devices/:id/approve` · `reject` · `revoke` | — | `device` atualizado |
 | POST | `/api/access/devices/:id/credentials` | — | `device`, `credential{deviceKey, header}` — **a chave só é devolvida uma vez** |
 | GET | `/api/access/devices/:id/status` | — | `online, secondsSinceSeen, message` (teste de comunicação) |

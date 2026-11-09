@@ -54,9 +54,9 @@ bash backend/test/run-bench.sh      # requer Docker e Node.js 18+
 
 O script cria MariaDB 11.8 e Node-RED 4 em Docker, carrega o esquema atual (reconstruído
 a partir das consultas dos fluxos, com o procedimento antigo) e aplica a migração duas vezes.
-Depois importa os fluxos e executa `api-test.js`: 67 verificações com o painel (sessão) e um
-ESP32 simulado com os mesmos pedidos do firmware v2. Abrangem: login, CORS com PATCH,
-adicionar/aprovar/rejeitar/desativar/revogar dispositivos, credenciais, heartbeat que não
+Depois importa os fluxos e executa `api-test.js`: 81 verificações com o painel (sessão) e um
+ESP32 simulado com os mesmos pedidos do firmware v2. Abrangem: login, CORS com PATCH e DELETE,
+adicionar/aprovar/rejeitar/desativar/revogar/eliminar dispositivos, eliminar utilizadores, credenciais, heartbeat que não
 reativa, registo completo, duplicado, cancelamento, erros específicos, acesso com janela
 horária, eventos idempotentes, histórico e CSV.
 

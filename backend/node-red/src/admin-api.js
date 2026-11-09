@@ -298,6 +298,29 @@ SELECT u.id, u.name, u.contact, u.email, u.active, u.created_at AS createdAt,
     }
   },
 
+  // Apaga de filho para pai: se um passo falhar, o utilizador fica com menos acessos, nunca com mais.
+  // Os access_logs mantêm-se (user_id/uid ficam como registo histórico).
+  'DELETE /api/access/users/:id'(step, rows, ctx, req) {
+    const id = posInt(req.params.id);
+    if (step === 'start') {
+      if (!id) return fail(400, 'validation_error', 'ID inválido.');
+      return query('SELECT u.name, (SELECT COUNT(*) FROM access_cards c WHERE c.user_id = u.id) AS cards FROM access_users u WHERE u.id = ?', [id], 'cancel');
+    }
+    if (step === 'cancel') {
+      if (!rows.length) return fail(404, 'user_not_found', 'Utilizador não encontrado.');
+      ctx.name = rows[0].name;
+      ctx.cards = Number(rows[0].cards) || 0;
+      return query("UPDATE access_registration_requests SET status = 'cancelled', error_code = 'user_deleted' WHERE user_id = ? AND status = 'waiting_card'", [id], 'permissions');
+    }
+    if (step === 'permissions') {
+      return query('DELETE p FROM access_permissions p JOIN access_cards c ON c.id = p.card_id WHERE c.user_id = ?', [id], 'cards');
+    }
+    if (step === 'cards') return query('DELETE FROM access_cards WHERE user_id = ?', [id], 'user');
+    if (step === 'user') return query('DELETE FROM access_users WHERE id = ?', [id], 'done');
+    if (!affected(rows)) return fail(404, 'user_not_found', 'Utilizador não encontrado.');
+    return audit('user.delete', id, { name: ctx.name, cards: ctx.cards }, [200, { success: true, deleted: true }]);
+  },
+
   // ---------------- Cartões ----------------
   'GET /api/access/cards'(step, rows, ctx, req) {
     const q = req.query;
@@ -583,6 +606,24 @@ SELECT ?, ?, t.id, ?, ?, ?, 'approved', ?, 0, ?, ?
     }
     const device = formatDevice(rows[0]);
     return audit('device.update', device.deviceId, b, [200, { success: true, device }]);
+  },
+
+  // Um ESP32 que continue ligado volta a anunciar-se e fica pendente, sem credencial
+  'DELETE /api/access/devices/:id'(step, rows, ctx, req) {
+    const id = posInt(req.params.id);
+    if (step === 'start') {
+      if (!id) return fail(400, 'validation_error', 'ID inválido.');
+      return query('SELECT device_id AS deviceId, name FROM access_devices WHERE id = ?', [id], 'cancel');
+    }
+    if (step === 'cancel') {
+      if (!rows.length) return fail(404, 'device_not_found', 'Dispositivo não encontrado.');
+      ctx.deviceId = rows[0].deviceId;
+      ctx.name = rows[0].name;
+      return query("UPDATE access_registration_requests SET status = 'cancelled', error_code = 'device_deleted' WHERE device_id = ? AND status = 'waiting_card'", [ctx.deviceId], 'remove');
+    }
+    if (step === 'remove') return query('DELETE FROM access_devices WHERE id = ?', [id], 'done');
+    if (!affected(rows)) return fail(404, 'device_not_found', 'Dispositivo não encontrado.');
+    return audit('device.delete', ctx.deviceId, { name: ctx.name }, [200, { success: true, deleted: true }]);
   },
 
   // Ações: approve | reject | revoke | credentials

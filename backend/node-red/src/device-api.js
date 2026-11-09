@@ -5,10 +5,10 @@
 // Entrada 1: http in   | Entrada 2: saída do nó MySQL
 // Saída 1: MySQL       | Saída 2: http response
 //
-// Autenticação do dispositivo: se o dispositivo tiver credencial gerada no
-// painel, o cabeçalho X-Device-Key tem de corresponder (SHA-256). Dispositivos
-// sem credencial continuam a funcionar (modo de transição), mas aparecem no
-// painel como "Sem credencial".
+// Autenticação do dispositivo: o dispositivo só funciona depois de ter credencial
+// gerada no painel e de enviar essa chave no cabeçalho X-Device-Key (comparada por
+// SHA-256). Sem credencial, o ESP32 apenas se anuncia (fica visível no painel
+// para aprovação e geração da chave) e todas as outras rotas respondem 401.
 // ============================================================
 
 const crypto = global.get('crypto');
@@ -38,12 +38,14 @@ const str = (v, max) => (v === undefined || v === null ? '' : String(v).trim().s
 const bool = (v) => v === true || v === 1 || v === '1';
 
 // Verifica a chave do dispositivo contra a linha de access_devices
+// Sem credencial gerada no painel não há autenticação possível: recusa sempre.
 function keyOk(row) {
-  if (!row || !row.credentialHash) return true;
+  if (!row || !row.credentialHash || !crypto) return false;
   const key = String((msg.req.headers || {})['x-device-key'] || '');
-  if (!key || !crypto) return false;
+  if (!key) return false;
   const digest = crypto.createHash('sha256').update(key).digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(String(row.credentialHash)));
+  const stored = String(row.credentialHash);
+  return digest.length === stored.length && crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(stored));
 }
 
 const DEVICE_ROW = `
@@ -74,8 +76,9 @@ const ROUTES = {
       const d = rows[0];
       const rssi = Number.isFinite(Number(b.wifiRssi)) ? Number(b.wifiRssi) : null;
       if (!d) {
-        // Dispositivo desconhecido: fica pendente até ser aprovado no painel
+        // Dispositivo desconhecido: fica pendente e sem credencial até o painel o aprovar e gerar a chave
         ctx.state = { approvalStatus: 'pending', active: false, doorId: null };
+        ctx.unauthenticated = true;
         return query(`
 INSERT INTO access_devices (device_id, hardware_id, name, door_id, device_type, approval_status, active, online,
                             firmware_version, ip_address, wifi_rssi, readers, last_seen)
@@ -83,12 +86,14 @@ VALUES (?, ?, ?, NULL, 'esp32_rfid', 'pending', 0, 1, ?, ?, ?, 'outside', NOW())
         [ctx.deviceId, ctx.hardwareId, str(b.name, 100) || ctx.deviceId, str(b.firmwareVersion, 40) || null,
           str(b.ipAddress, 45) || null, rssi], 'done');
       }
-      if (!keyOk(d)) return respond(401, { success: false, error: 'device_auth_failed' });
+      if (d.credentialHash && !keyOk(d)) return respond(401, { success: false, error: 'device_auth_failed' });
       if (d.hardwareId && d.hardwareId.toUpperCase() !== ctx.hardwareId.toUpperCase()) {
         node.warn(`Hardware diferente para ${ctx.deviceId}: esperado ${d.hardwareId}, recebido ${ctx.hardwareId}`);
         return respond(409, { success: false, error: 'hardware_mismatch' });
       }
       ctx.state = { approvalStatus: d.approvalStatus, active: bool(d.active), doorId: d.doorId };
+      // Sem credencial: regista o contacto (para aparecer no painel), mas não autentica
+      ctx.unauthenticated = !d.credentialHash;
       // Nunca reativa nem renomeia: o estado administrativo pertence ao painel
       return query(`
 UPDATE access_devices
@@ -97,7 +102,11 @@ UPDATE access_devices
  WHERE device_id = ?`, [ctx.hardwareId, str(b.firmwareVersion, 40) || null, str(b.ipAddress, 45) || null, rssi, ctx.deviceId], 'done');
     }
     const s = ctx.state;
-    return respond(200, { success: true, registered: true, deviceId: ctx.deviceId, doorId: s.doorId,
+    if (ctx.unauthenticated) {
+      return respond(401, { success: false, registered: true, authenticated: false, error: 'device_not_authenticated',
+        approvalStatus: s.approvalStatus, message: 'Aprove o dispositivo e gere a credencial no painel; depois grave-a em DEVICE_API_KEY.' });
+    }
+    return respond(200, { success: true, registered: true, authenticated: true, deviceId: ctx.deviceId, doorId: s.doorId,
       approved: s.approvalStatus === 'approved', active: s.approvalStatus === 'approved' && s.active, approvalStatus: s.approvalStatus });
   },
 

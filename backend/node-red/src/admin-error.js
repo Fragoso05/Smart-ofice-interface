@@ -24,6 +24,12 @@ if (code === 'ER_DUP_ENTRY' || /Duplicate entry/i.test(text)) {
   return msg;
 }
 
+if (code === 'ER_ROW_IS_REFERENCED_2' || code === 'ER_ROW_IS_REFERENCED') {
+  msg.statusCode = 409;
+  msg.payload = { success: false, error: 'record_in_use', message: 'Não é possível eliminar: existem dados associados na base de dados.' };
+  return msg;
+}
+
 if (['ER_NO_SUCH_TABLE', 'ER_BAD_FIELD_ERROR', 'ER_SP_DOES_NOT_EXIST'].includes(code) ||
     /doesn't exist|Unknown column/i.test(text)) {
   node.error(`Esquema MySQL desatualizado (${api.route || '?'}): ${text}`, msg);

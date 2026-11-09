@@ -1,6 +1,7 @@
 /* ============================================================
    ÁREA ADMINISTRATIVA — controlo de acessos RFID
-   Tema escuro minimalista. Referência: 800x480 (Raspberry Pi 5" DSI);
+   Tema escuro (predefinido) e claro, com botão na barra superior.
+   Referência: 800x480 (Raspberry Pi 5" DSI);
    em ecrãs maiores o menu lateral mostra os rótulos.
    ============================================================ */
 
@@ -16,13 +17,48 @@
   --a-ok: #22c55e;
   --a-fail: #ef4444;
   --a-warn: #f59e0b;
+  --a-ok-text: var(--a-ok-text);
+  --a-fail-text: var(--a-fail-text);
+  --a-warn-text: var(--a-warn-text);
+  --a-on-primary: #000;
+  --a-primary-hover: #e4e4e7;
+  --a-active: #1c1c1f;
+  --a-row-border: #18181b;
+  --a-toast: #18181b;
+  --a-shadow: rgba(0, 0, 0, 0.5);
   --a-radius: 14px;
 
   z-index: 30;
   background: var(--a-bg);
   color: var(--a-text);
+  color-scheme: dark;
   font-size: 15px;
   overflow: hidden;
+}
+
+.admin[data-theme="light"] {
+  --a-bg: #f4f4f5;
+  --a-surface: #fff;
+  --a-surface-2: #f0f0f2;
+  --a-border: #e4e4e7;
+  --a-border-strong: #c9c9d0;
+  --a-text: #18181b;
+  --a-dim: #52525b;
+  --a-mute: #6b6b74;
+  --a-ok: #16a34a;
+  --a-fail: #dc2626;
+  --a-warn: #d97706;
+  --a-ok-text: #15803d;
+  --a-fail-text: #b91c1c;
+  --a-warn-text: #92400e;
+  --a-on-primary: #fff;
+  --a-primary-hover: #3f3f46;
+  --a-active: #e4e4e7;
+  --a-row-border: #ececef;
+  --a-toast: #fff;
+  --a-shadow: rgba(0, 0, 0, 0.15);
+
+  color-scheme: light;
 }
 
 .admin svg { width: 20px; height: 20px; flex-shrink: 0; }
@@ -83,16 +119,18 @@
 .adm-btn.is-busy { opacity: 0.7; cursor: progress; }
 .adm-btn svg { width: 18px; height: 18px; }
 
-.adm-btn--primary { background: var(--a-text); color: #000; border-color: var(--a-text); }
-.adm-btn--primary:hover:not(:disabled) { background: #e4e4e7; }
+.adm-btn--primary { background: var(--a-text); color: var(--a-on-primary); border-color: var(--a-text); }
+.adm-btn--primary:hover:not(:disabled) { background: var(--a-primary-hover); }
 
-.adm-btn--danger { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.5); color: #fca5a5; }
+.adm-btn--danger { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.5); color: var(--a-fail-text); }
 .adm-btn--danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.2); }
 
 .adm-btn--ghost { background: transparent; }
 .adm-btn--sm { min-height: 36px; padding: 0 14px; font-size: 0.85rem; }
 .adm-btn--lg { min-height: 52px; font-size: 1rem; }
 .adm-btn--block { width: 100%; }
+.adm-btn--icon { width: 36px; padding: 0; }
+.adm-btn--icon.is-busy { width: auto; padding: 0 14px; }
 
 .adm-icon-btn {
   display: flex;
@@ -149,12 +187,11 @@
   background: var(--a-surface);
   color: var(--a-text);
   font-size: 0.95rem;
-  color-scheme: dark;
   outline: none;
   transition: border-color 0.15s ease;
 }
 
-.adm-input:focus { border-color: #71717a; }
+.adm-input:focus { border-color: var(--a-mute); }
 .adm-input:disabled { opacity: 0.6; }
 .adm-input::placeholder { color: var(--a-mute); }
 
@@ -217,7 +254,7 @@ select.adm-input {
   color: var(--a-dim);
 }
 
-.adm-login__msg--error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; }
+.adm-login__msg--error { background: rgba(239, 68, 68, 0.1); color: var(--a-fail-text); }
 
 .adm-login__actions { display: flex; gap: 10px; margin-top: 4px; }
 .adm-login__actions .adm-btn { flex: 1; min-height: 48px; }
@@ -271,7 +308,7 @@ select.adm-input {
 
 .adm-nav__item span[data-icon] { display: flex; }
 .adm-nav__item:hover { color: var(--a-text); background: var(--a-surface); }
-.adm-nav__item.is-active { color: var(--a-text); background: #1c1c1f; }
+.adm-nav__item.is-active { color: var(--a-text); background: var(--a-active); }
 .adm-nav__home { border: 1px solid var(--a-border); color: var(--a-text); }
 
 .adm-main {
@@ -406,7 +443,7 @@ select.adm-input {
   font-variant-numeric: tabular-nums;
 }
 
-.adm-stat--danger .adm-stat__value { color: #fca5a5; }
+.adm-stat--danger .adm-stat__value { color: var(--a-fail-text); }
 
 /* ---------- Painéis, listas, grelhas ---------- */
 .adm-panel {
@@ -488,7 +525,7 @@ select.adm-input {
 
 .adm-table td {
   padding: 11px 12px 11px 0;
-  border-bottom: 1px solid #18181b;
+  border-bottom: 1px solid var(--a-row-border);
   vertical-align: top;
 }
 
@@ -542,9 +579,9 @@ select.adm-input {
   border: 1px solid transparent;
 }
 
-.adm-pill--ok { color: #86efac; background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); }
-.adm-pill--fail { color: #fca5a5; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
-.adm-pill--warn { color: #fcd34d; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+.adm-pill--ok { color: var(--a-ok-text); background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); }
+.adm-pill--fail { color: var(--a-fail-text); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+.adm-pill--warn { color: var(--a-warn-text); background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
 .adm-pill--off { color: var(--a-dim); background: var(--a-surface-2); border-color: var(--a-border); }
 
 .adm-pager {
@@ -791,15 +828,15 @@ select.adm-input {
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--a-border-strong);
-  background: #18181b;
+  background: var(--a-toast);
   font-size: 0.9rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px var(--a-shadow);
   animation: adm-fade 0.18s ease;
   transition: opacity 0.3s ease;
 }
 
 .adm-toast__item--ok { border-color: rgba(34, 197, 94, 0.5); }
-.adm-toast__item--error { border-color: rgba(239, 68, 68, 0.6); color: #fecaca; }
+.adm-toast__item--error { border-color: rgba(239, 68, 68, 0.6); color: var(--a-fail-text); }
 .adm-toast__item.is-leaving { opacity: 0; }
 
 /* ---------- Gestão de dispositivos, salas e permissões ---------- */
@@ -817,12 +854,12 @@ select.adm-input {
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.adm-stat--link:hover { border-color: #52525b; background: var(--a-surface-2); }
-.adm-stat--ok .adm-stat__value { color: #86efac; }
-.adm-stat--warn .adm-stat__value { color: #fcd34d; }
+.adm-stat--link:hover { border-color: var(--a-mute); background: var(--a-surface-2); }
+.adm-stat--ok .adm-stat__value { color: var(--a-ok-text); }
+.adm-stat--warn .adm-stat__value { color: var(--a-warn-text); }
 
 .adm-chip--warn {
-  color: #fcd34d;
+  color: var(--a-warn-text);
   border-color: rgba(245, 158, 11, 0.45);
   background: rgba(245, 158, 11, 0.1);
   cursor: pointer;
@@ -862,7 +899,7 @@ select.adm-input {
 .adm-inline-link svg { width: 16px; height: 16px; color: var(--a-text); margin: 0; }
 .adm-note > span { display: flex; flex-direction: column; align-items: flex-start; }
 
-.adm-progress__detail--warn { color: #fcd34d; }
+.adm-progress__detail--warn { color: var(--a-warn-text); }
 
 .adm-rooms { display: flex; flex-direction: column; gap: 12px; }
 .adm-room__title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -924,7 +961,7 @@ select.adm-input {
 .adm-pick > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .adm-pick small { color: var(--a-mute); font-size: 0.78rem; }
 .adm-pick:hover { background: var(--a-surface-2); }
-.adm-pick.is-active { border-color: var(--a-border-strong); background: #1c1c1f; }
+.adm-pick.is-active { border-color: var(--a-border-strong); background: var(--a-active); }
 
 /* ============================================================
    RESPONSIVO

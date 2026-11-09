@@ -196,6 +196,39 @@ const heartbeat = (deviceId, hw, key) => esp("POST", "/api/device/register", { d
   r = await call("GET", "/api/access/cards?status=revoked");
   check("filtro de cartões revogados", r.data.cards.some((c) => c.uid === "04A1B201"));
 
+  // --- Eliminar
+  const preDel = await fetch(B + "/api/access/users/1", { method: "OPTIONS", headers: { Origin: ORIGIN, "Access-Control-Request-Method": "DELETE" } });
+  check("preflight DELETE permitido", /DELETE/.test(preDel.headers.get("access-control-allow-methods") || ""));
+  r = await call("DELETE", `/api/access/users/${newUserId}`, undefined, { origin: "https://evil.example" });
+  check("eliminar de origem não autorizada → 403", r.status === 403);
+  r = await call("DELETE", "/api/access/users/abc");
+  check("eliminar utilizador com ID inválido → 400", r.status === 400);
+  r = await call("DELETE", "/api/access/users/999999");
+  check("eliminar utilizador inexistente → 404", r.status === 404 && r.data.error === "user_not_found");
+  r = await call("DELETE", `/api/access/users/${newUserId}`);
+  check("eliminar utilizador", r.status === 200 && r.data.deleted === true, JSON.stringify(r.data));
+  r = await call("GET", `/api/access/users?id=${newUserId}`);
+  check("utilizador desaparece da lista", r.data.total === 0);
+  r = await call("GET", `/api/access/cards?userId=${newUserId}`);
+  check("cartões do utilizador eliminados", r.data.total === 0);
+  r = await call("GET", `/api/access/permissions?userId=${newUserId}`);
+  check("permissões do utilizador eliminadas", r.data.permissions.length === 0);
+  r = await call("GET", "/api/access/logs?deviceId=esp32-door-02");
+  check("histórico mantém-se depois de eliminar o utilizador", r.data.total >= 1 && r.data.logs[0].uid === "04F3A9C2", JSON.stringify(r.data.logs));
+
+  const delDevice = (await call("GET", "/api/access/devices?q=esp32-door-02")).data.devices[0];
+  r = await call("DELETE", `/api/access/devices/${delDevice.id}`);
+  check("eliminar dispositivo", r.status === 200 && r.data.deleted === true, JSON.stringify(r.data));
+  r = await call("GET", "/api/access/devices?q=esp32-door-02");
+  check("dispositivo desaparece da lista", r.data.devices.length === 0);
+  r = await call("DELETE", `/api/access/devices/${delDevice.id}`);
+  check("eliminar dispositivo inexistente → 404", r.status === 404 && r.data.error === "device_not_found");
+  r = await call("GET", "/api/access/logs?deviceId=esp32-door-02");
+  check("histórico mantém-se depois de eliminar o dispositivo", r.data.total >= 1);
+  await heartbeat("esp32-door-02", "AA:BB:CC:00:00:02", key);
+  r = await call("GET", "/api/access/devices?q=esp32-door-02");
+  check("ESP32 ainda ligado volta como pendente e sem credencial", r.data.devices.length === 1 && r.data.devices[0].approvalStatus === "pending" && r.data.devices[0].hasCredential === false, JSON.stringify(r.data.devices));
+
   // --- Sessão expirada
   await call("POST", "/__bench/expire", {});
   r = await call("GET", "/api/access/users");
